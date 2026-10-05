@@ -644,11 +644,11 @@ function go(dir) {
   slides[prev].classList.add(dir > 0 ? 'out-l' : 'out-r');
   cur = nxt;
   const s = slides[cur];
-  s.style.transition = 'none';
-  s.style.opacity = '0';
-  s.style.transform = dir > 0 ? 'translateX(40px)' : 'translateX(-40px)';
+  // For backward nav: override default translateX(40px) with opposite direction
+  if (dir < 0) { s.style.transition = 'none'; s.style.transform = 'translateX(-40px)'; }
   requestAnimationFrame(() => requestAnimationFrame(() => {
     s.style.transition = '';
+    s.style.transform = '';
     s.classList.add('active');
   }));
   setTimeout(() => { slides[prev].classList.remove('out-l','out-r'); }, 450);
