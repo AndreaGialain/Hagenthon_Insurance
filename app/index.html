@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VoceGuidata — Portale AssicuraMi</title>
+  <meta name="description" content="Companion audio-first per utenti con difficoltà visive o motorie. Hagenthon – Accenture Application Engineering.">
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════ HEADER ═══════════════════════════════ -->
+  <header class="app-header" role="banner">
+    <div class="header-brand">
+      <span class="brand-icon" aria-hidden="true">🎙️</span>
+      <span class="brand-name">VoceGuidata</span>
+      <span class="brand-tagline">Companion audio-first per portali assicurativi</span>
+    </div>
+    <div class="header-status" aria-live="polite" aria-label="Stato sintesi vocale">
+      <span class="status-dot" id="status-dot" aria-hidden="true"></span>
+      <span id="status-text">Inizializzazione…</span>
+    </div>
+  </header>
+
+  <!-- ═══════════════════════════════ MAIN ════════════════════════════════ -->
+  <main class="app-layout" role="main">
+
+    <!-- ── SINISTRA: Portale assicurativo simulato ── -->
+    <section class="portal-panel" aria-label="Portale assicurativo simulato AssicuraMi">
+
+      <div class="panel-header">
+        <h2>Portale AssicuraMi</h2>
+        <span class="portal-badge" aria-label="Simulazione demo">Simulazione</span>
+      </div>
+
+      <!-- Schermata portale: contenuto iniettato da portal.js -->
+      <div id="portal-screen" class="portal-screen" role="region" aria-live="polite" aria-label="Schermata portale">
+        <div style="display:flex;align-items:center;justify-content:center;height:300px;color:#606080;font-size:1rem;flex-direction:column;gap:1rem;">
+          <span style="font-size:3rem;">🔒</span>
+          <p>Premi <strong style="color:#A100FF">Avvia VoceGuidata</strong> per iniziare la demo</p>
+        </div>
+      </div>
+
+      <!-- Barra progresso -->
+      <div class="step-progress" aria-label="Progresso navigazione">
+        <div class="progress-track">
+          <div class="progress-bar" id="progress-bar" role="progressbar"
+               aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"
+               aria-label="Progresso completamento"></div>
+        </div>
+        <div class="step-labels" id="step-labels" aria-hidden="true"></div>
+      </div>
+
+    </section>
+
+    <!-- ── DESTRA: Pannello VoceGuidata ── -->
+    <aside class="guide-panel" id="guide-panel" aria-label="Pannello VoceGuidata — assistente vocale">
+
+      <!-- Header pannello -->
+      <div class="guide-header">
+        <div class="guide-logo">
+          <span class="guide-icon" aria-hidden="true">🎙️</span>
+          <h2>VoceGuidata</h2>
+        </div>
+        <button class="btn-start" id="btn-start"
+                onclick="VoceGuidata.start()"
+                aria-label="Avvia VoceGuidata — companion audio-first">
+          Avvia VoceGuidata
+        </button>
+      </div>
+
+      <!-- Indicatore step corrente -->
+      <div class="guide-step-indicator" aria-label="Step corrente" aria-live="polite">
+        <span class="step-number" id="current-step-num" aria-label="Step numero">1</span>
+        <span class="step-of" aria-hidden="true">di 5</span>
+        <span class="step-name" id="current-step-name">Login</span>
+      </div>
+
+      <!-- Box istruzione corrente -->
+      <div class="guide-instruction-box" role="region" aria-label="Istruzione corrente">
+        <p class="guide-instruction" id="guide-instruction" aria-live="polite">
+          Premi "Avvia VoceGuidata" per iniziare. Le istruzioni vocali ti guideranno passo per passo.
+        </p>
+      </div>
+
+      <!-- Hint shortcut tastiera -->
+      <div class="shortcut-hint" id="shortcut-hint" role="note" aria-label="Scorciatoia da tastiera suggerita" aria-live="polite">
+        <!-- Riempito da VoceGuidata.showShortcutHint() -->
+      </div>
+
+      <!-- Pulsanti di controllo -->
+      <div class="guide-controls">
+        <button class="btn-repeat" id="btn-repeat"
+                onclick="VoiceGuide.repeatLast()"
+                disabled
+                aria-label="Ripeti l'ultima istruzione vocale">
+          <span class="btn-icon" aria-hidden="true">🔁</span>
+          Ripeti
+        </button>
+        <button class="btn-help" id="btn-help"
+                onclick="VoceGuidata.requestHelp()"
+                disabled
+                aria-label="Chiedi aiuto — sono bloccato">
+          <span class="btn-icon" aria-hidden="true">🆘</span>
+          Aiuto — sono bloccato
+        </button>
+      </div>
+
+      <!-- Configurazione API key Claude -->
+      <div class="api-config" role="group" aria-label="Configurazione API Claude">
+        <label class="config-label" for="api-key-input">
+          🔑 API Key Claude <em>(opzionale — abilita istruzioni AI)</em>
+        </label>
+        <div class="api-key-wrapper">
+          <input
+            type="password"
+            id="api-key-input"
+            class="api-key-input"
+            placeholder="sk-ant-api03-…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Inserisci API key Claude per istruzioni AI generative">
+          <button class="btn-save-key" onclick="VoceGuidata.saveApiKey()" aria-label="Salva API key">
+            Salva
+          </button>
+        </div>
+        <span class="api-note">Senza key: istruzioni statiche predefinite — nessun errore</span>
+      </div>
+
+      <!-- Configurazione timeout blocco -->
+      <div class="api-config" role="group" aria-label="Configurazione rilevamento blocco">
+        <label class="config-label" for="stuck-timeout-input">
+          ⏱ Tempo prima dell'aiuto automatico
+        </label>
+        <div class="timeout-wrapper">
+          <input
+            type="range"
+            id="stuck-timeout-input"
+            min="5" max="60" step="1" value="15"
+            aria-label="Secondi di inattività prima del rilevamento blocco"
+            oninput="VoceGuidata.updateStuckTimeout(this.value)">
+          <span id="stuck-timeout-value" class="timeout-value">15 s</span>
+        </div>
+        <span class="api-note">Intervallo configurabile: da 5 a 60 secondi</span>
+      </div>
+
+      <!-- Cronologia istruzioni -->
+      <div class="guide-log" aria-label="Cronologia istruzioni VoceGuidata">
+        <h3 class="log-title">Cronologia istruzioni</h3>
+        <ul class="log-list" id="log-list" aria-live="polite" aria-label="Lista ultime istruzioni">
+        </ul>
+      </div>
+
+    </aside>
+  </main>
+
+  <!-- Overlay tastiera (feedback visivo shortcut) -->
+  <div class="shortcut-overlay" id="shortcut-overlay"
+       role="status" aria-live="assertive" aria-label="Scorciatoia attivata"></div>
+
+  <!-- ═══════════════════════════════ SCRIPTS ══════════════════════════════ -->
+  <script src="voice-guide.js"></script>
+  <script src="agent.js"></script>
+  <script src="keyboard-nav.js"></script>
+  <script src="portal.js"></script>
+
+  <script>
+    /**
+     * VoceGuidata — Orchestratore principale dell'applicazione
+     * Collega Portal, VoiceGuide, AgentHelper e KeyboardNav
+     */
+    const VoceGuidata = {
+      apiKey:           '',
+      started:          false,
+      stuckCount:       0,
+      lastActionTime:   Date.now(),
+      stuckThresholdMs: 15000,
+      _stuckInterval:   null,
+
+      // ── Avvio ─────────────────────────────────────────────────────
+      start() {
+        if (this.started) return;
+        this.started = true;
+
+        // Aggiorna UI pulsante start
+        const btn = document.getElementById('btn-start');
+        btn.textContent = '✓ Attivo';
+        btn.classList.add('active');
+        btn.disabled = true;
+
+        // Abilita controlli
+        document.getElementById('btn-repeat').disabled = false;
+        document.getElementById('btn-help').disabled   = false;
+
+        // Inizializza moduli
+        Portal.init();
+        KeyboardNav.init();
+
+        // Ripristina timeout da localStorage
+        const savedTimeout = localStorage.getItem('vg_stuck_timeout_s');
+        if (savedTimeout) {
+          this.stuckThresholdMs = parseInt(savedTimeout) * 1000;
+          const slider  = document.getElementById('stuck-timeout-input');
+          const valueEl = document.getElementById('stuck-timeout-value');
+          if (slider)  slider.value       = savedTimeout;
+          if (valueEl) valueEl.textContent = savedTimeout + ' s';
+        }
+
+        if (!VoiceGuide.isSupported()) {
+          this.updateStatus('TTS non supportato — solo testo', false);
+          this.showInstruction('Il tuo browser non supporta la sintesi vocale. Segui le istruzioni testuali nel pannello.');
+        } else {
+          this.updateStatus('Pronto', true);
+          this._speakWelcome();
+        }
+
+        // Avvia rilevamento inattività ogni 5 secondi
+        this._stuckInterval = setInterval(() => this._checkStuck(), 5000);
+      },
+
+      // ── Benvenuto ─────────────────────────────────────────────────
+      _speakWelcome() {
+        const msg = 'Benvenuto in VoceGuidata. Sono qui per aiutarti passo per passo. '
+                  + 'Iniziamo dal primo passo: accedere al portale con le tue credenziali.';
+        this.showInstruction(msg);
+        VoiceGuide.speak(msg);
+        // Istruzione step 1 dopo la intro
+        setTimeout(() => this.loadStepInstruction(1), 4500);
+      },
+
+      // ── Cambio step (chiamato da portal.js) ───────────────────────
+      onStepChange(step, stepName) {
+        this.stuckCount     = 0;
+        this.lastActionTime = Date.now();
+
+        document.getElementById('current-step-num').textContent  = step;
+        document.getElementById('current-step-name').textContent = stepName;
+
+        this._updateProgressBar(step);
+
+        // Piccolo ritardo per lasciar finire l'animazione del portale
+        setTimeout(() => this.loadStepInstruction(step), 400);
+      },
+
+      // ── Carica istruzione per il passo corrente ───────────────────
+      async loadStepInstruction(step) {
+        try {
+          const instr = await AgentHelper.getContextualHelp(step, 0, this.apiKey);
+          this.showInstruction(instr.text);
+          VoiceGuide.speak(instr.text);
+
+          if (instr.shortcut) {
+            this.showShortcutHint(instr.shortcutLabel, instr.shortcut);
+            // Annuncia shortcut dopo l'istruzione principale
+            setTimeout(() => {
+              VoiceGuide.speakKeyboardShortcut(instr.shortcutLabel, instr.shortcut);
+            }, Math.max(2000, instr.text.length * 55));
+          }
+        } catch (e) {
+          console.warn('[VoceGuidata] loadStepInstruction error:', e);
+        }
+      },
+
+      // ── Richiesta aiuto (pulsante "Sono bloccato") ────────────────
+      async requestHelp() {
+        if (!this.started) return;
+
+        this.stuckCount++;
+        this.lastActionTime = Date.now();
+
+        const helpBtn = document.getElementById('btn-help');
+        helpBtn.classList.add('pulsing');
+        setTimeout(() => helpBtn.classList.remove('pulsing'), 1600);
+
+        try {
+          const instr = await AgentHelper.getContextualHelp(
+            Portal.currentStep,
+            this.stuckCount,
+            this.apiKey
+          );
+          this.showInstruction(instr.text);
+          VoiceGuide.speak(instr.text);
+
+          if (instr.shortcut) {
+            this.showShortcutHint(instr.shortcutLabel, instr.shortcut);
+            setTimeout(() => {
+              VoiceGuide.speakKeyboardShortcut(instr.shortcutLabel, instr.shortcut);
+            }, Math.max(2000, instr.text.length * 55));
+          }
+        } catch (e) {
+          const fallback = 'Riprova a premere Tab per navigare con la tastiera, oppure usa il tasto Alt indicato nella pagina.';
+          this.showInstruction(fallback);
+          VoiceGuide.speak(fallback);
+        }
+      },
+
+      // ── Timeout blocco configurabile ──────────────────────────────
+      updateStuckTimeout(seconds) {
+        const s = Math.max(5, Math.min(60, parseInt(seconds)));
+        this.stuckThresholdMs = s * 1000;
+        const valueEl = document.getElementById('stuck-timeout-value');
+        if (valueEl) valueEl.textContent = s + ' s';
+        localStorage.setItem('vg_stuck_timeout_s', s);
+      },
+
+      // ── Salva API key ─────────────────────────────────────────────
+      saveApiKey() {
+        const input = document.getElementById('api-key-input');
+        const key   = input.value.trim();
+        if (!key) return;
+        this.apiKey  = key;
+        input.value  = '••••••••••••••••••••';
+        input.setAttribute('aria-label', 'API key salvata');
+        this._showToast('API key Claude salvata');
+      },
+
+      // ── UI helpers ────────────────────────────────────────────────
+      showInstruction(text) {
+        const el = document.getElementById('guide-instruction');
+        if (!el) return;
+
+        // Fade out / in
+        el.style.opacity = '0';
+        el.style.transition = 'opacity 0.2s';
+        setTimeout(() => {
+          el.textContent = text;
+          el.style.opacity = '1';
+        }, 200);
+
+        this._addToLog(text);
+
+        // Glow border sul pannello
+        const panel = document.getElementById('guide-panel');
+        panel.classList.add('speaking');
+        setTimeout(() => panel.classList.remove('speaking'), 3200);
+      },
+
+      showShortcutHint(action, shortcut) {
+        const hint = document.getElementById('shortcut-hint');
+        if (!hint) return;
+        hint.innerHTML =
+          `<span class="hint-key">${shortcut}</span>` +
+          `<span class="hint-action">${action}</span>`;
+      },
+
+      updateStatus(text, ok) {
+        const txt = document.getElementById('status-text');
+        const dot = document.getElementById('status-dot');
+        if (txt) txt.textContent = text;
+        if (dot) dot.className = 'status-dot ' + (ok ? 'ok' : 'warn');
+      },
+
+      _updateProgressBar(step) {
+        const bar = document.getElementById('progress-bar');
+        if (bar) {
+          const pct = ((step - 1) / 4) * 100;
+          bar.style.width = pct + '%';
+          bar.setAttribute('aria-valuenow', pct);
+        }
+      },
+
+      _addToLog(text) {
+        const list = document.getElementById('log-list');
+        if (!list) return;
+        const li = document.createElement('li');
+        li.className = 'log-item';
+        li.textContent = text;
+        list.insertBefore(li, list.firstChild);
+        // Mantieni solo le ultime 5 voci
+        while (list.children.length > 5) list.removeChild(list.lastChild);
+      },
+
+      _showToast(msg) {
+        const toast = document.createElement('div');
+        toast.className = 'toast';
+        toast.textContent = msg;
+        toast.setAttribute('role', 'status');
+        document.body.appendChild(toast);
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => toast.classList.add('visible'));
+        });
+        setTimeout(() => {
+          toast.classList.remove('visible');
+          setTimeout(() => toast.remove(), 350);
+        }, 2200);
+      },
+
+      // ── Rilevamento inattività ────────────────────────────────────
+      _checkStuck() {
+        if (!this.started || Portal.currentStep >= 5) return;
+        if (AgentHelper.detectStuck(this.lastActionTime, this.stuckThresholdMs) && this.stuckCount === 0) {
+          // Prima segnalazione passiva (non incrementa stuckCount — solo suggerimento)
+          const step    = Portal.currentStep;
+          const stepDef = { 1:'Alt+A', 2:'Alt+D', 3:'Alt+R', 4:'Alt+C', 5:'Alt+S' };
+          const shortcut = stepDef[step] || '';
+          const msg = `Hai bisogno di aiuto? Premi il pulsante Aiuto, oppure usa ${shortcut} sulla tastiera.`;
+          this.showInstruction(msg);
+          VoiceGuide.speak(msg);
+          // Impedisce spam: considera come stuck count 1 per questo ciclo
+          this.lastActionTime = Date.now();
+        }
+      }
+    };
+  </script>
+
+</body>
+</html>
