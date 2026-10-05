@@ -1,162 +1,169 @@
 /**
  * VoceGuidata — voice-guide.js
- * Modulo Web Speech API TTS (Text-to-Speech)
- * Lingua: it-IT | Fallback silenzioso se TTS non disponibile
+ * TTS: preferisce "Google italiano" (neurale) in Chrome.
+ * Opzionalmente usa OpenAI TTS (tts-1-hd, voce "nova") per qualità massima.
  */
 
 const VoiceGuide = (() => {
   'use strict';
 
-  let lastSpokenText = '';
-  let currentUtterance = null;
-  let speaking = false;
-  let supported = false;
+  let lastSpokenText  = '';
+  let speaking        = false;
+  let supported       = false;
+  let _openAiKey      = '';
+  let _currentAudio   = null; // HTMLAudioElement per OpenAI TTS
 
-  // ── Init: verifica supporto browser ──────────────────────────────
+  // ── Init ─────────────────────────────────────────────────────────
   function _init() {
     supported = ('speechSynthesis' in window && typeof SpeechSynthesisUtterance !== 'undefined');
-    if (!supported) {
-      console.warn('[VoiceGuide] Web Speech API non supportata da questo browser.');
+    if (!supported) console.warn('[VoiceGuide] Web Speech API non supportata.');
+
+    // Chrome: carica le voci in modo asincrono
+    if (supported && speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = () => {};
     }
     return supported;
   }
 
-  /**
-   * isSupported() — true se il browser supporta la sintesi vocale
-   * @returns {boolean}
-   */
-  function isSupported() {
-    return supported;
+  // ── Selezione voce italiana migliore disponibile ─────────────────
+  function _pickBestItalianVoice() {
+    const voices = speechSynthesis.getVoices();
+    if (!voices.length) return null;
+
+    // Priorità: 1) Google neurale  2) altra neurale/cloud  3) qualsiasi it-IT
+    return (
+      voices.find(v => /it/i.test(v.lang) && /google/i.test(v.name)) ||
+      voices.find(v => /it/i.test(v.lang) && !v.localService)        ||
+      voices.find(v => v.lang === 'it-IT')                            ||
+      voices.find(v => v.lang.startsWith('it'))
+    );
   }
 
-  /**
-   * speak(text) — Legge il testo ad alta voce in italiano
-   * Annulla qualsiasi sintesi in corso prima di iniziare
-   * @param {string} text  Testo da leggere
-   * @param {object} opts  Opzioni: rate, pitch, volume
-   */
-  function speak(text, opts = {}) {
-    if (!supported || !text) return;
-
-    stopSpeaking(); // cancella coda precedente
-
-    lastSpokenText = text;
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang    = 'it-IT';
-    utterance.rate    = opts.rate   ?? 0.92;   // leggermente più lento per chiarezza
-    utterance.pitch   = opts.pitch  ?? 1.0;
-    utterance.volume  = opts.volume ?? 1.0;
-
-    // Seleziona voce italiana se disponibile
-    const voices = speechSynthesis.getVoices();
-    const italianVoice = voices.find(v => v.lang === 'it-IT') ||
-                         voices.find(v => v.lang.startsWith('it'));
-    if (italianVoice) utterance.voice = italianVoice;
-
-    utterance.onstart = () => {
-      speaking = true;
-      currentUtterance = utterance;
+  // ── OpenAI TTS (tts-1-hd, voce "nova") ──────────────────────────
+  async function _speakOpenAI(text) {
+    try {
       _setSpeakingUI(true);
-    };
+      const res = await fetch('https://api.openai.com/v1/audio/speech', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${_openAiKey}`,
+          'Content-Type':  'application/json',
+        },
+        body: JSON.stringify({
+          model: 'tts-1-hd',
+          input: text,
+          voice: 'nova',    // naturale, neutro, ottimo per l'italiano
+          speed: 0.95,
+        }),
+      });
 
-    utterance.onend = () => {
-      speaking = false;
-      currentUtterance = null;
+      if (!res.ok) throw new Error(`OpenAI TTS HTTP ${res.status}`);
+
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+
+      if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+
+      _currentAudio = new Audio(url);
+      speaking = true;
+
+      _currentAudio.onended = () => {
+        speaking = false;
+        _currentAudio = null;
+        URL.revokeObjectURL(url);
+        _setSpeakingUI(false);
+      };
+      _currentAudio.onerror = () => {
+        speaking = false;
+        _currentAudio = null;
+        _setSpeakingUI(false);
+      };
+
+      await _currentAudio.play();
+    } catch (err) {
+      console.warn('[VoiceGuide] OpenAI TTS fallback:', err.message);
+      _openAiKey = ''; // disabilita per questo turno se errore
       _setSpeakingUI(false);
-    };
+      _speakBrowser(text); // fallback al browser
+    }
+  }
 
-    utterance.onerror = (e) => {
+  // ── Web Speech API (fallback) ────────────────────────────────────
+  function _speakBrowser(text, opts = {}) {
+    if (!supported) return;
+    stopSpeaking();
+
+    const utterance    = new SpeechSynthesisUtterance(text);
+    utterance.lang     = 'it-IT';
+    utterance.rate     = opts.rate   ?? 0.92;
+    utterance.pitch    = opts.pitch  ?? 1.0;
+    utterance.volume   = opts.volume ?? 1.0;
+
+    const voice = _pickBestItalianVoice();
+    if (voice) utterance.voice = voice;
+
+    utterance.onstart  = () => { speaking = true;  _setSpeakingUI(true);  };
+    utterance.onend    = () => { speaking = false; _setSpeakingUI(false); };
+    utterance.onerror  = (e) => {
       speaking = false;
-      currentUtterance = null;
       _setSpeakingUI(false);
-      // Errore 'interrupted' è normale quando stopSpeaking() viene chiamato
-      if (e.error !== 'interrupted') {
-        console.warn('[VoiceGuide] Errore TTS:', e.error);
-      }
+      if (e.error !== 'interrupted') console.warn('[VoiceGuide] TTS error:', e.error);
     };
 
-    currentUtterance = utterance;
-
-    // Chrome workaround: speechSynthesis si blocca dopo ~15s inattività
-    // Usa un piccolo ritardo per garantire l'avvio
     setTimeout(() => {
       if (speechSynthesis.paused) speechSynthesis.resume();
       speechSynthesis.speak(utterance);
     }, 80);
   }
 
-  /**
-   * speakKeyboardShortcut(action, shortcut)
-   * Formula vocale per comunicare uno shortcut da tastiera
-   * Es: "Per accedere, premi Alt più A"
-   * @param {string} action    Azione (es. "Accedi")
-   * @param {string} shortcut  Tasto combinato (es. "Alt+A")
-   */
-  function speakKeyboardShortcut(action, shortcut) {
-    if (!supported) return;
+  // ── API pubblica: speak() ────────────────────────────────────────
+  function speak(text, opts = {}) {
+    if (!text) return;
+    lastSpokenText = text;
 
-    // Converte "Alt+A" → "Alt più A" per la lettura naturale in italiano
-    const spoken = shortcut
-      .replace(/\+/g, ' più ')
-      .replace(/Alt/g, 'Alt')
-      .replace(/Ctrl/g, 'Controllo')
-      .replace(/Shift/g, 'Maiuscolo')
-      .replace(/Enter/g, 'Invio')
-      .replace(/Tab/g, 'Tab')
-      .replace(/Escape/g, 'Escape');
-
-    const text = `Per ${action}, premi ${spoken} sulla tastiera.`;
-    speak(text, { rate: 0.88 });
+    if (_openAiKey) {
+      _speakOpenAI(text);
+    } else {
+      _speakBrowser(text, opts);
+    }
   }
 
-  /**
-   * stopSpeaking() — Annulla tutta la coda di sintesi vocale
-   */
+  function speakKeyboardShortcut(action, shortcut) {
+    if (!supported && !_openAiKey) return;
+    const spoken = shortcut
+      .replace(/\+/g, ' più ')
+      .replace(/Ctrl/g, 'Controllo')
+      .replace(/Shift/g, 'Maiuscolo')
+      .replace(/Enter/g, 'Invio');
+    speak(`Per ${action}, premi ${spoken} sulla tastiera.`, { rate: 0.88 });
+  }
+
   function stopSpeaking() {
-    if (!supported) return;
-    if (speechSynthesis.speaking || speechSynthesis.pending) {
+    if (_currentAudio) { _currentAudio.pause(); _currentAudio = null; }
+    if (supported && (speechSynthesis.speaking || speechSynthesis.pending)) {
       speechSynthesis.cancel();
     }
     speaking = false;
-    currentUtterance = null;
     _setSpeakingUI(false);
   }
 
-  /**
-   * repeatLast() — Ripete l'ultima istruzione pronunciata
-   */
   function repeatLast() {
-    if (!lastSpokenText) return;
-    speak(lastSpokenText);
+    if (lastSpokenText) speak(lastSpokenText);
   }
 
-  /**
-   * isSpeaking() — true se il motore TTS sta parlando
-   * @returns {boolean}
-   */
-  function isSpeaking() {
-    return speaking;
+  function setOpenAiKey(key) {
+    _openAiKey = key ? key.trim() : '';
   }
 
-  /**
-   * getLastText() — Restituisce l'ultimo testo pronunciato
-   * @returns {string}
-   */
-  function getLastText() {
-    return lastSpokenText;
-  }
+  function isSupported()  { return supported || !!_openAiKey; }
+  function isSpeaking()   { return speaking; }
+  function getLastText()  { return lastSpokenText; }
 
-  // ── Helpers privati ──────────────────────────────────────────────
-
-  /**
-   * Aggiorna lo stato visivo del pannello VoceGuidata durante la sintesi
-   */
+  // ── UI feedback ──────────────────────────────────────────────────
   function _setSpeakingUI(active) {
+    const dot = document.getElementById('status-dot');
+    const txt = document.getElementById('status-text');
     const panel = document.getElementById('guide-panel');
-    const dot   = document.getElementById('status-dot');
-    const txt   = document.getElementById('status-text');
-
     if (active) {
       panel?.classList.add('speaking');
       if (dot) { dot.style.background = '#A100FF'; dot.style.boxShadow = '0 0 8px #A100FF'; }
@@ -168,18 +175,9 @@ const VoiceGuide = (() => {
     }
   }
 
-  // ── Le voci potrebbero non essere disponibili subito (Chrome) ─────
-  // speechSynthesis.getVoices() è async su Chrome; attende l'evento
-  if (supported && speechSynthesis.onvoiceschanged !== undefined) {
-    speechSynthesis.onvoiceschanged = () => {
-      // Trigger silenzioso: le voci sono ora disponibili
-    };
-  }
-
-  // Init all'import
   _init();
 
-  // ── API pubblica ──────────────────────────────────────────────────
-  return { speak, speakKeyboardShortcut, stopSpeaking, repeatLast, isSpeaking, isSupported, getLastText };
+  return { speak, speakKeyboardShortcut, stopSpeaking, repeatLast,
+           isSpeaking, isSupported, getLastText, setOpenAiKey };
 
 })();

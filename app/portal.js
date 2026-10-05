@@ -15,6 +15,7 @@ var Portal = (() => {
   let _stepIdx = 0;    // posizione nell'array
   let _flow    = null; // 'attestato' | 'sinistro'
   let _inactivityTimer = null;
+  let _formData = {};  // dati raccolti dai form durante la navigazione
 
   // ── Sequenze per flusso ─────────────────────────────────────────
   const FLOW_STEPS = {
@@ -760,13 +761,13 @@ var Portal = (() => {
                 </div>
               </div>
               <div class="p-riepilogo-card">
-                <div class="p-riepilogo-row"><span>Tipo sinistro</span><strong>Incidente stradale</strong></div>
-                <div class="p-riepilogo-row"><span>Data evento</span><strong>05/10/2025 ore 09:30</strong></div>
-                <div class="p-riepilogo-row"><span>Luogo</span><strong>Milano — Via Torino 45</strong></div>
-                <div class="p-riepilogo-row"><span>Veicolo</span><strong>EF 482 GH — Fiat Panda 1.2</strong></div>
-                <div class="p-riepilogo-row"><span>Altri veicoli</span><strong>Nessuno</strong></div>
-                <div class="p-riepilogo-row"><span>Feriti</span><strong>No</strong></div>
-                <div class="p-riepilogo-row"><span>Allegati</span><strong>2 foto danni</strong></div>
+                <div class="p-riepilogo-row"><span>Tipo sinistro</span><strong>${_formData.tipo || '—'}</strong></div>
+                <div class="p-riepilogo-row"><span>Data evento</span><strong>${_fmtData(_formData.data)} ore ${_formData.ora || '—'}</strong></div>
+                <div class="p-riepilogo-row"><span>Luogo</span><strong>${_formData.citta || '—'} — ${_formData.via || '—'}</strong></div>
+                <div class="p-riepilogo-row"><span>Veicolo</span><strong>${_formData.veicolo || '—'}</strong></div>
+                <div class="p-riepilogo-row"><span>Altri veicoli</span><strong>${_formData.altriVeicoli || 'No'}</strong></div>
+                <div class="p-riepilogo-row"><span>Feriti</span><strong>${_formData.feriti || 'No'}</strong></div>
+                <div class="p-riepilogo-row"><span>Allegati</span><strong>${_formData.allegati || 'Nessuno'}</strong></div>
               </div>
               <div class="p-info-strip" style="margin-top:1rem;">
                 ⚠️ Verificare che tutti i dati siano corretti prima di inviare. Una volta inviata, la segnalazione
@@ -805,6 +806,7 @@ var Portal = (() => {
 
   function advance() {
     if (_stepIdx < _steps.length - 1) {
+      _collectFormData(_steps[_stepIdx]); // salva dati prima di cambiare step
       _notifyAction();
       _stepIdx++;
       _renderStep();
@@ -844,6 +846,50 @@ var Portal = (() => {
   // ════════════════════════════════════════════════════════════════
   // PRIVATI
   // ════════════════════════════════════════════════════════════════
+
+  function _fmtData(iso) {
+    if (!iso) return '—';
+    const [y, m, d] = iso.split('-');
+    return d && m && y ? `${d}/${m}/${y}` : iso;
+  }
+
+  function _collectFormData(stepId) {
+    const g = (id) => document.getElementById(id)?.value?.trim() || '';
+    const r = (name) => document.querySelector(`input[name="${name}"]:checked`)?.value || '';
+    const c = (id) => document.getElementById(id)?.checked || false;
+    const t = (sel) => document.querySelector(sel)?.textContent?.trim() || '';
+
+    if (stepId === 'sin_tipo') {
+      _formData.tipo = t('.p-tipo-card.selected .p-tipo-name') || 'Incidente stradale';
+    }
+    if (stepId === 'sin_dati') {
+      _formData.data     = g('sin-data');
+      _formData.ora      = g('sin-ora');
+      _formData.citta    = g('sin-citta');
+      _formData.via      = g('sin-via');
+      _formData.dinamica = g('sin-dinamica');
+      _formData.veicolo  = r('veicolo') === 'AB371CD' ? 'AB 371 CD — Renault Clio' : 'EF 482 GH — Fiat Panda 1.2';
+    }
+    if (stepId === 'sin_veicoli') {
+      const altriSi = r('altri') === 'si';
+      _formData.altriVeicoli = altriSi ? 'Sì' : 'No';
+      _formData.targaTerzo   = altriSi ? (g('terzo-targa') || '—') : '—';
+      _formData.hasCid       = c('cid-check') ? 'Sì' : 'No';
+      _formData.danni        = g('sin-danni') || '—';
+      _formData.feriti       = r('feriti') === 'si' ? 'Sì' : 'No';
+      _formData.forze        = c('forze-check') ? 'Sì' : 'No';
+    }
+    if (stepId === 'sin_allegati') {
+      const fotos   = document.querySelector('.p-allegato-row:nth-child(1) .p-upload-done');
+      const cid     = document.querySelector('.p-allegato-row:nth-child(2) .p-upload-done');
+      const verbale = document.querySelector('.p-allegato-row:nth-child(3) .p-upload-done');
+      const parts = [];
+      if (fotos?.style.display !== 'none' && fotos)   parts.push('Foto danni');
+      if (cid?.style.display   !== 'none' && cid)     parts.push('CID');
+      if (verbale?.style.display !== 'none' && verbale) parts.push('Verbale');
+      _formData.allegati = parts.length ? parts.join(', ') : 'Nessuno';
+    }
+  }
 
   function _renderStep() {
     const container = document.getElementById('portal-screen');

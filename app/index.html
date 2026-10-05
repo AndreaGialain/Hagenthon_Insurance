@@ -112,6 +112,27 @@
         </button>
       </div>
 
+      <!-- Configurazione API key OpenAI TTS (voce naturale) -->
+      <div class="api-config" role="group" aria-label="Configurazione voce naturale OpenAI">
+        <label class="config-label" for="openai-key-input">
+          🎙️ API Key OpenAI <em>(voce naturale — opzionale)</em>
+        </label>
+        <div class="api-key-wrapper">
+          <input
+            type="password"
+            id="openai-key-input"
+            class="api-key-input"
+            placeholder="sk-…"
+            autocomplete="off"
+            spellcheck="false"
+            aria-label="Inserisci API key OpenAI per voce naturale">
+          <button class="btn-save-key" onclick="VoceGuidata.saveOpenAiKey()" aria-label="Salva API key OpenAI">
+            Salva
+          </button>
+        </div>
+        <span class="api-note">Senza key: voce del browser (Chrome: "Google italiano")</span>
+      </div>
+
       <!-- Configurazione API key Claude -->
       <div class="api-config" role="group" aria-label="Configurazione API Claude">
         <label class="config-label" for="api-key-input">
@@ -165,10 +186,10 @@
        role="status" aria-live="assertive" aria-label="Scorciatoia attivata"></div>
 
   <!-- ═══════════════════════════════ SCRIPTS ══════════════════════════════ -->
-  <script src="voice-guide.js?v=2"></script>
+  <script src="voice-guide.js?v=4"></script>
   <script src="agent.js?v=2"></script>
   <script src="keyboard-nav.js?v=2"></script>
-  <script src="portal.js?v=3"></script>
+  <script src="portal.js?v=4"></script>
 
   <script>
     /**
@@ -306,7 +327,7 @@
         localStorage.setItem('vg_stuck_timeout_s', s);
       },
 
-      // ── Salva API key ─────────────────────────────────────────────
+      // ── Salva API key Claude ──────────────────────────────────────
       saveApiKey() {
         const input = document.getElementById('api-key-input');
         const key   = input.value.trim();
@@ -315,6 +336,17 @@
         input.value  = '••••••••••••••••••••';
         input.setAttribute('aria-label', 'API key salvata');
         this._showToast('API key Claude salvata');
+      },
+
+      // ── Salva API key OpenAI (TTS voce naturale) ─────────────────
+      saveOpenAiKey() {
+        const input = document.getElementById('openai-key-input');
+        const key   = input.value.trim();
+        if (!key) return;
+        VoiceGuide.setOpenAiKey(key);
+        input.value = '••••••••••••••••••••';
+        input.setAttribute('aria-label', 'API key OpenAI salvata');
+        this._showToast('Voce naturale OpenAI attivata 🎙️');
       },
 
       // ── UI helpers ────────────────────────────────────────────────
