@@ -766,6 +766,23 @@ body {
   color: white;
 }
 
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  margin-bottom: 0.35rem;
+}
+.toggle-label input[type="checkbox"] {
+  accent-color: var(--accent);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .timeout-wrapper {
   display: flex;
   align-items: center;

@@ -154,8 +154,20 @@
         <span class="api-note">Senza key: istruzioni statiche predefinite — nessun errore</span>
       </div>
 
+      <!-- Aiuto automatico toggle -->
+      <div class="api-config" role="group" aria-label="Configurazione aiuto automatico">
+        <label class="config-label">⚙️ Aiuto automatico</label>
+        <label class="toggle-label" for="auto-help-toggle">
+          <input type="checkbox" id="auto-help-toggle" checked
+            aria-label="Abilita aiuto automatico per inattività"
+            onchange="VoceGuidata.setAutoHelp(this.checked)">
+          Attiva suggerimento automatico dopo inattività
+        </label>
+        <span class="api-note" id="auto-help-note">La voce si attiva automaticamente dopo 15 s di inattività</span>
+      </div>
+
       <!-- Configurazione timeout blocco -->
-      <div class="api-config" role="group" aria-label="Configurazione rilevamento blocco">
+      <div class="api-config" id="stuck-timeout-config" role="group" aria-label="Configurazione rilevamento blocco">
         <label class="config-label" for="stuck-timeout-input">
           ⏱ Tempo prima dell'aiuto automatico
         </label>
@@ -199,6 +211,7 @@
     const VoceGuidata = {
       apiKey:           '',
       started:          false,
+      autoHelp:         true,
       stuckCount:       0,
       lastActionTime:   Date.now(),
       stuckThresholdMs: 15000,
@@ -231,6 +244,14 @@
           const valueEl = document.getElementById('stuck-timeout-value');
           if (slider)  slider.value       = savedTimeout;
           if (valueEl) valueEl.textContent = savedTimeout + ' s';
+        }
+
+        // Ripristina preferenza aiuto automatico
+        const savedAutoHelp = localStorage.getItem('vg_auto_help');
+        if (savedAutoHelp === '0') {
+          const toggle = document.getElementById('auto-help-toggle');
+          if (toggle) toggle.checked = false;
+          this.setAutoHelp(false);
         }
 
         if (!VoiceGuide.isSupported()) {
@@ -411,8 +432,21 @@
         }, 2200);
       },
 
+      // ── Toggle aiuto automatico ──────────────────────────────────
+      setAutoHelp(enabled) {
+        this.autoHelp = !!enabled;
+        localStorage.setItem('vg_auto_help', enabled ? '1' : '0');
+        const note    = document.getElementById('auto-help-note');
+        const timeout = document.getElementById('stuck-timeout-config');
+        if (note)    note.textContent = enabled
+          ? `La voce si attiva automaticamente dopo ${this.stuckThresholdMs / 1000} s di inattività`
+          : 'La voce si attiva solo quando premi il pulsante Aiuto';
+        if (timeout) timeout.style.display = enabled ? '' : 'none';
+      },
+
       // ── Rilevamento inattività ────────────────────────────────────
       _checkStuck() {
+        if (!this.autoHelp) return;
         const sid = Portal.currentStepId;
         if (!this.started || sid === 'att_download' || sid === 'sin_conferma') return;
         if (AgentHelper.detectStuck(this.lastActionTime, this.stuckThresholdMs) && this.stuckCount === 0) {

@@ -1033,10 +1033,11 @@ var Portal = (() => {
 
   function _startInactivityTimer() {
     if (_inactivityTimer) clearTimeout(_inactivityTimer);
+    if (window.VoceGuidata?.autoHelp === false) return;
     const threshold = window.VoceGuidata?.stuckThresholdMs ?? 15000;
     _inactivityTimer = setTimeout(() => {
       const stepId = _steps[_stepIdx];
-      if (window.VoceGuidata && VoceGuidata.started && stepId !== 'att_download' && stepId !== 'sin_conferma') {
+      if (window.VoceGuidata && VoceGuidata.started && VoceGuidata.autoHelp !== false && stepId !== 'att_download' && stepId !== 'sin_conferma') {
         VoceGuidata.stuckCount = Math.min(VoceGuidata.stuckCount + 1, 2);
         const sc = STEP_DEFS[stepId]?.shortcutKey;
         const hint = sc
