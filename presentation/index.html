@@ -1,1030 +1,680 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>VoceGuidata — Hagenthon | Accenture Application Engineering</title>
-  <meta name="description" content="VoceGuidata: companion audio-first per portali assicurativi. Hagenthon – Accenture Application Engineering – Tema 03.">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VoceGuidata — Hagenthon 2025</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ac: #A100FF;
+  --acl: #CC55FF;
+  --acd: rgba(161,0,255,.16);
+  --bg: #050008;
+  --bg1: #0d000f;
+  --bg2: #130016;
+  --w: #fff;
+  --g1: #e0e0f0;
+  --g2: #a0a0c0;
+  --g3: #606080;
+  --ok: #00e676;
+  --err: #ff5252;
+  --bd: rgba(161,0,255,.25);
+  --bds: rgba(255,255,255,.08);
+  --r: 14px;
+  --f: 'Inter', system-ui, sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width: 100%; height: 100%; overflow: hidden; font-family: var(--f); background: var(--bg); color: var(--w); -webkit-font-smoothing: antialiased; }
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+/* ── Deck ── */
+#deck { position: relative; width: 100vw; height: 100vh; overflow: hidden; }
 
-  <style>
-    /* ── CSS Variables ── */
-    :root {
-      --accent:       #A100FF;
-      --accent-light: #CC55FF;
-      --accent-dim:   rgba(161, 0, 255, 0.15);
-      --accent-glow:  0 0 30px rgba(161, 0, 255, 0.4);
-      --bg:           #050008;
-      --bg-card:      #0d000f;
-      --bg-card2:     #130016;
-      --white:        #ffffff;
-      --gray-1:       #e0e0f0;
-      --gray-2:       #a0a0c0;
-      --gray-3:       #606080;
-      --success:      #00e676;
-      --warn:         #ffab40;
-      --border:       rgba(161, 0, 255, 0.25);
-      --border-subtle:rgba(255, 255, 255, 0.08);
-      --radius:       14px;
-      --radius-lg:    22px;
-      --font:         'Inter', system-ui, sans-serif;
-    }
+.slide {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  padding: 3.5rem 5rem 4rem;
+  opacity: 0; pointer-events: none;
+  transform: translateX(40px);
+  transition: opacity .38s ease, transform .38s ease;
+}
+.slide.active  { opacity: 1; pointer-events: all; transform: translateX(0); }
+.slide.out-l   { opacity: 0; transform: translateX(-40px); }
+.slide.out-r   { opacity: 0; transform: translateX(40px); }
+.slide.center  { align-items: center; justify-content: center; text-align: center; }
 
-    /* ── Reset ── */
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/* ── Fixed chrome ── */
+#brand {
+  position: fixed; top: 1.1rem; left: 1.8rem; z-index: 100;
+  font-size: .9rem; font-weight: 700; color: var(--ac);
+  display: flex; align-items: center; gap: .4rem;
+}
+#snum {
+  position: fixed; top: 1.1rem; right: 1.8rem; z-index: 100;
+  font-size: .72rem; color: var(--g3); letter-spacing: .05em;
+}
+#bar {
+  position: fixed; top: 0; left: 0; height: 3px;
+  background: var(--ac); transition: width .4s ease; z-index: 200;
+}
+#nav {
+  position: fixed; bottom: 1.4rem; left: 50%; transform: translateX(-50%);
+  display: flex; align-items: center; gap: 1.4rem; z-index: 100;
+  background: rgba(5,0,8,.88); backdrop-filter: blur(14px);
+  border: 1px solid var(--bd); border-radius: 999px;
+  padding: .45rem 1.2rem;
+}
+#nav button {
+  background: none; border: none; color: var(--g2); font-size: 1.15rem;
+  cursor: pointer; padding: .2rem .5rem; transition: color .2s; font-family: var(--f);
+}
+#nav button:hover { color: var(--ac); }
+#nav button:disabled { opacity: .2; cursor: default; }
+#nav span { font-size: .78rem; color: var(--g3); min-width: 48px; text-align: center; }
 
-    html { scroll-behavior: smooth; }
+/* ── Typography ── */
+.lbl {
+  display: inline-block; font-size: .68rem; font-weight: 700;
+  letter-spacing: .1em; text-transform: uppercase;
+  color: var(--ac); background: var(--acd);
+  border: 1px solid var(--bd); padding: 3px 12px;
+  border-radius: 999px; margin-bottom: .9rem;
+}
+h1 { font-size: clamp(2.4rem,5.5vw,4.2rem); font-weight: 900; line-height: 1.05; letter-spacing: -.03em; }
+h2 { font-size: clamp(1.7rem,3.5vw,2.8rem); font-weight: 800; line-height: 1.15; letter-spacing: -.02em; margin-bottom: .3rem; }
+h3 { font-size: 1.05rem; font-weight: 700; }
+p  { color: var(--g1); line-height: 1.65; }
 
-    body {
-      font-family: var(--font);
-      background: var(--bg);
-      color: var(--white);
-      font-size: 16px;
-      line-height: 1.6;
-      -webkit-font-smoothing: antialiased;
-      overflow-x: hidden;
-    }
+.gtext {
+  background: linear-gradient(135deg, var(--ac), var(--acl), #fff);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
 
-    /* ── Fade-in animazione sezioni ── */
-    @keyframes fadeInUp {
-      from { opacity: 0; transform: translateY(28px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
+/* ── Cards ── */
+.card {
+  background: var(--bg1); border: 1px solid var(--bds);
+  border-radius: 16px; padding: 1.4rem;
+  transition: border-color .25s;
+}
+.card:hover { border-color: var(--bd); }
+.card-ac { background: var(--bg2); border-color: var(--bd); }
 
-    .fade-in {
-      opacity: 0;
-      animation: fadeInUp 0.7s ease forwards;
-    }
+/* ── Grids ── */
+.g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.1rem; }
+.g3 { display: grid; grid-template-columns: repeat(3,1fr); gap: 1.1rem; }
+.g4 { display: grid; grid-template-columns: repeat(4,1fr); gap: .9rem; }
 
-    .delay-1 { animation-delay: 0.1s; }
-    .delay-2 { animation-delay: 0.2s; }
-    .delay-3 { animation-delay: 0.35s; }
-    .delay-4 { animation-delay: 0.5s; }
+/* ── Numbers ── */
+.bignum { font-size: 3rem; font-weight: 900; color: var(--ac); line-height: 1; margin-bottom: .25rem; }
 
-    /* ── Navbar ── */
-    nav {
-      position: fixed;
-      top: 0; left: 0; right: 0;
-      z-index: 1000;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 0.9rem 2rem;
-      background: rgba(5, 0, 8, 0.85);
-      backdrop-filter: blur(12px);
-      border-bottom: 1px solid var(--border);
-    }
+/* ── Chips ── */
+.chip {
+  display: inline-flex; align-items: center; gap: 5px;
+  padding: 4px 11px; background: var(--acd);
+  border: 1px solid var(--bd); border-radius: 999px;
+  font-size: .76rem; font-weight: 600; color: var(--acl); margin: 3px;
+}
 
-    .nav-brand {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: var(--accent);
-      text-decoration: none;
-    }
+/* ── Flow steps ── */
+.steps { display: flex; align-items: center; gap: 0; flex-wrap: wrap; }
+.step  { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; }
+.step-b {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--acd); border: 2px solid var(--ac);
+  display: flex; align-items: center; justify-content: center; font-size: 1rem;
+}
+.step-l { font-size: .62rem; color: var(--g2); text-align: center; max-width: 56px; }
+.arr {
+  width: 20px; height: 2px; background: var(--ac); flex-shrink: 0; position: relative;
+}
+.arr::after {
+  content: ''; position: absolute; right: -4px; top: -3.5px;
+  border: 4.5px solid transparent; border-left-color: var(--ac);
+}
 
-    .nav-links {
-      display: flex;
-      gap: 1.5rem;
-      list-style: none;
-    }
+/* ── Before/After ── */
+.ba-b { border-color: rgba(255,82,82,.3); background: rgba(255,82,82,.04); }
+.ba-a { border-color: rgba(0,230,118,.3); background: rgba(0,230,118,.04); }
+.ba-lbl { font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; margin-bottom: .55rem; }
+.ba-b .ba-lbl { color: var(--err); }
+.ba-a .ba-lbl { color: var(--ok); }
+.ba-row { display: flex; gap: .55rem; margin-bottom: .55rem; align-items: flex-start; }
+.ba-ico { font-size: 1.05rem; line-height: 1.4; flex-shrink: 0; }
+.ba-txt { font-size: .82rem; color: var(--g1); }
 
-    .nav-links a {
-      font-size: 0.82rem;
-      color: var(--gray-2);
-      text-decoration: none;
-      transition: color 0.2s;
-    }
+/* ── Evidence ── */
+.ev-g { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; margin-bottom: .7rem; }
+.ev-bx { padding: .7rem; border-radius: 10px; font-size: .8rem; }
+.ev-b  { background: rgba(255,82,82,.05); border: 1px solid rgba(255,82,82,.2); }
+.ev-a  { background: rgba(0,230,118,.05); border: 1px solid rgba(0,230,118,.2); }
+.ev-ac { background: rgba(161,0,255,.06); border: 1px solid rgba(161,0,255,.3); }
+.ev-lbl{ font-weight: 700; font-size: .67rem; text-transform: uppercase; letter-spacing: .08em; margin-bottom: 3px; }
+.ev-b .ev-lbl { color: var(--err); }
+.ev-a .ev-lbl { color: var(--ok); }
+.ev-ac .ev-lbl{ color: var(--acl); }
+.ev-msg { background: rgba(0,0,0,.3); border-radius: 6px; padding: .45rem .6rem; color: var(--g1); font-style: italic; line-height: 1.4; }
 
-    .nav-links a:hover { color: var(--white); }
+/* ── Badge ── */
+.badge {
+  display: inline-flex; align-items: center; gap: 5px;
+  font-size: .75rem; color: var(--g2);
+  border: 1px solid var(--bds); padding: 3px 13px; border-radius: 999px;
+}
 
-    .nav-btn {
-      padding: 0.45rem 1rem;
-      background: var(--accent);
-      color: white;
-      border: none;
-      border-radius: 8px;
-      font-family: var(--font);
-      font-size: 0.82rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      transition: background 0.2s;
-    }
-
-    .nav-btn:hover { background: var(--accent-light); }
-
-    /* ── Sections ── */
-    section {
-      padding: 6rem 2rem;
-      max-width: 1100px;
-      margin: 0 auto;
-    }
-
-    section.full-width {
-      max-width: 100%;
-      padding-left: 0;
-      padding-right: 0;
-    }
-
-    /* ── Labels ── */
-    .label {
-      display: inline-block;
-      font-size: 0.72rem;
-      font-weight: 700;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--accent);
-      background: var(--accent-dim);
-      border: 1px solid var(--border);
-      padding: 3px 12px;
-      border-radius: 999px;
-      margin-bottom: 1.2rem;
-    }
-
-    /* ── Typography ── */
-    h1 { font-size: clamp(2.2rem, 5vw, 4rem); font-weight: 900; line-height: 1.1; letter-spacing: -0.03em; }
-    h2 { font-size: clamp(1.6rem, 3.5vw, 2.6rem); font-weight: 800; line-height: 1.2; letter-spacing: -0.02em; }
-    h3 { font-size: 1.2rem; font-weight: 700; }
-    p  { color: var(--gray-1); line-height: 1.7; }
-
-    .gradient-text {
-      background: linear-gradient(135deg, var(--accent), var(--accent-light), #ffffff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    /* ── Cards ── */
-    .card {
-      background: var(--bg-card);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius-lg);
-      padding: 2rem;
-      transition: border-color 0.3s, box-shadow 0.3s;
-    }
-
-    .card:hover {
-      border-color: var(--border);
-      box-shadow: var(--accent-glow);
-    }
-
-    .card-accent {
-      background: var(--bg-card2);
-      border-color: var(--border);
-    }
-
-    /* ── Grid layouts ── */
-    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
-    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
-    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
-
-    @media (max-width: 768px) {
-      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
-    }
-
-    /* ── Hero ── */
-    #hero {
-      padding-top: 10rem;
-      padding-bottom: 6rem;
-      text-align: center;
-    }
-
-    .hero-eyebrow {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-      flex-wrap: wrap;
-    }
-
-    .hero-badge {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 0.8rem;
-      color: var(--gray-2);
-      border: 1px solid var(--border-subtle);
-      padding: 4px 14px;
-      border-radius: 999px;
-    }
-
-    .hero-title { margin-bottom: 1.25rem; }
-
-    .hero-sub {
-      font-size: 1.15rem;
-      color: var(--gray-2);
-      max-width: 620px;
-      margin: 0 auto 2.5rem;
-    }
-
-    .hero-cta {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.9rem 2.2rem;
-      background: var(--accent);
-      color: white;
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-weight: 600;
-      text-decoration: none;
-      transition: background 0.2s, transform 0.2s, box-shadow 0.2s;
-    }
-
-    .hero-cta:hover {
-      background: var(--accent-light);
-      transform: translateY(-2px);
-      box-shadow: var(--accent-glow);
-    }
-
-    .hero-secondary {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.9rem 2rem;
-      background: transparent;
-      color: var(--gray-1);
-      border: 1px solid var(--border-subtle);
-      border-radius: var(--radius);
-      font-size: 1rem;
-      font-weight: 500;
-      text-decoration: none;
-      margin-left: 1rem;
-      transition: border-color 0.2s;
-    }
-
-    .hero-secondary:hover { border-color: var(--border); }
-
-    .hero-persona {
-      margin-top: 3.5rem;
-      display: inline-flex;
-      align-items: center;
-      gap: 1rem;
-      background: rgba(161,0,255,0.07);
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 1rem 1.5rem;
-      text-align: left;
-    }
-
-    .persona-avatar {
-      width: 52px;
-      height: 52px;
-      background: linear-gradient(135deg, var(--accent), #6600cc);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      flex-shrink: 0;
-    }
-
-    .persona-name { font-weight: 700; font-size: 1rem; }
-    .persona-desc { font-size: 0.82rem; color: var(--gray-2); }
-
-    /* ── Divider ── */
-    .section-divider {
-      height: 1px;
-      background: linear-gradient(90deg, transparent, var(--border), transparent);
-      margin: 0 2rem;
-    }
-
-    /* ── Numero highlight ── */
-    .big-num {
-      font-size: 3.5rem;
-      font-weight: 900;
-      color: var(--accent);
-      line-height: 1;
-      margin-bottom: 0.4rem;
-    }
-
-    /* ── Before/After ── */
-    .ba-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1.5rem;
-    }
-
-    .ba-before {
-      border-color: rgba(255, 82, 82, 0.3);
-      background: rgba(255, 82, 82, 0.05);
-    }
-
-    .ba-after {
-      border-color: rgba(0, 230, 118, 0.3);
-      background: rgba(0, 230, 118, 0.05);
-    }
-
-    .ba-label {
-      font-size: 0.75rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 0.75rem;
-    }
-
-    .ba-before .ba-label { color: #ff5252; }
-    .ba-after  .ba-label { color: var(--success); }
-
-    .ba-step {
-      display: flex;
-      align-items: flex-start;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .ba-icon {
-      font-size: 1.2rem;
-      line-height: 1.4;
-      flex-shrink: 0;
-    }
-
-    .ba-text { font-size: 0.9rem; color: var(--gray-1); }
-
-    @media (max-width: 640px) {
-      .ba-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ── Deliverables ── */
-    .deliverable-num {
-      font-size: 0.7rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.12em;
-      color: var(--accent);
-      margin-bottom: 0.4rem;
-    }
-
-    .quote-box {
-      background: rgba(161,0,255,0.06);
-      border-left: 3px solid var(--accent);
-      border-radius: 0 var(--radius) var(--radius) 0;
-      padding: 1rem 1.25rem;
-      margin: 1rem 0;
-    }
-
-    .quote-box p { font-size: 0.95rem; font-style: italic; color: var(--gray-1); }
-
-    .evidence-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-      margin-top: 1rem;
-    }
-
-    .evidence-before, .evidence-after {
-      padding: 1rem;
-      border-radius: var(--radius);
-      font-size: 0.88rem;
-    }
-
-    .evidence-before {
-      background: rgba(255, 82, 82, 0.06);
-      border: 1px solid rgba(255, 82, 82, 0.2);
-    }
-
-    .evidence-after {
-      background: rgba(0, 230, 118, 0.06);
-      border: 1px solid rgba(0, 230, 118, 0.2);
-    }
-
-    .ev-label {
-      font-weight: 700;
-      font-size: 0.75rem;
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 0.4rem;
-    }
-
-    .evidence-before .ev-label { color: #ff5252; }
-    .evidence-after  .ev-label { color: var(--success); }
-
-    .ev-msg {
-      background: rgba(0,0,0,0.3);
-      border-radius: 8px;
-      padding: 0.6rem 0.75rem;
-      color: var(--gray-1);
-      font-size: 0.85rem;
-      line-height: 1.5;
-      font-style: italic;
-    }
-
-    @media (max-width: 640px) {
-      .evidence-grid { grid-template-columns: 1fr; }
-    }
-
-    /* ── Skill chips ── */
-    .skill-chip {
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 14px;
-      background: var(--accent-dim);
-      border: 1px solid var(--border);
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: var(--accent-light);
-      margin: 4px;
-    }
-
-    /* ── Footer ── */
-    footer {
-      border-top: 1px solid var(--border-subtle);
-      padding: 2rem;
-      text-align: center;
-      color: var(--gray-3);
-      font-size: 0.82rem;
-    }
-
-    footer strong { color: var(--accent); }
-
-    /* ── Utilities ── */
-    .mt-1 { margin-top: 0.5rem; }
-    .mt-2 { margin-top: 1rem; }
-    .mt-3 { margin-top: 1.5rem; }
-    .mb-1 { margin-bottom: 0.5rem; }
-    .mb-2 { margin-bottom: 1rem; }
-    .text-accent { color: var(--accent); }
-    .text-success { color: var(--success); }
-    .text-muted { color: var(--gray-3); }
-    .text-sm { font-size: 0.88rem; }
-  </style>
+/* ── Utility ── */
+.mt1 { margin-top: .5rem; } .mt2 { margin-top: 1rem; } .mt3 { margin-top: 1.4rem; }
+.mb1 { margin-bottom: .5rem; } .mb2 { margin-bottom: 1rem; }
+.sm  { font-size: .82rem; }
+.ac  { color: var(--ac); } .ok { color: var(--ok); } .mu { color: var(--g3); }
+</style>
 </head>
 <body>
 
-  <!-- ════════════════════════════════════════════
-       NAVBAR
-  ════════════════════════════════════════════ -->
-  <nav>
-    <a href="#hero" class="nav-brand">🎙️ VoceGuidata</a>
-    <ul class="nav-links">
-      <li><a href="#problema">Problema</a></li>
-      <li><a href="#soluzione">Soluzione</a></li>
-      <li><a href="#agentica">Agente AI</a></li>
-      <li><a href="#deliverables">Deliverable</a></li>
-    </ul>
-    <a href="../app/index.html" class="nav-btn" target="_blank">▶ Demo live</a>
-  </nav>
+<div id="brand">🎙️ VoceGuidata</div>
+<div id="snum">1 / 12</div>
+<div id="bar" style="width:8.33%"></div>
 
-  <!-- ════════════════════════════════════════════
-       1. HERO
-  ════════════════════════════════════════════ -->
-  <section id="hero" class="full-width" style="max-width:1100px;margin:0 auto;text-align:center;">
-    <div class="fade-in">
-      <div class="hero-eyebrow">
-        <span class="hero-badge">🏆 Hagenthon 2025</span>
-        <span class="hero-badge">Tema 03 — Educazione Digitale Inclusiva</span>
-        <span class="hero-badge">Accenture Application Engineering</span>
-      </div>
+<div id="deck">
 
-      <h1 class="hero-title">
-        <span class="gradient-text">VoceGuidata</span><br>
-        Navigare il digitale<br>con la voce
-      </h1>
+<!-- ═══ S1: HERO ═══ -->
+<div class="slide center active" id="s1">
+  <div style="display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem;">
+    <span class="badge">🏆 Hagenthon 2025</span>
+    <span class="badge">Tema 03 — Educazione Digitale Inclusiva</span>
+    <span class="badge">Accenture Application Engineering</span>
+  </div>
+  <h1><span class="gtext">VoceGuidata</span></h1>
+  <p style="font-size:1.2rem;color:var(--g2);max-width:600px;margin:.75rem auto 2rem;">
+    Companion audio-first per utenti con difficoltà visive o motorie nei portali assicurativi
+  </p>
+  <div style="margin-bottom:2.5rem;">
+    <a href="../app/index.html" target="_blank"
+       style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 2rem;background:var(--ac);color:#fff;border-radius:12px;font-weight:600;text-decoration:none;font-size:.95rem;">
+      ▶ Demo live
+    </a>
+  </div>
+  <div style="display:inline-flex;align-items:center;gap:1rem;background:rgba(161,0,255,.07);border:1px solid var(--bd);border-radius:14px;padding:1rem 1.6rem;">
+    <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--ac),#6600cc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.6rem;flex-shrink:0;">👴</div>
+    <div style="text-align:left;">
+      <div style="font-weight:700;">Mario, 68 anni</div>
+      <div style="font-size:.8rem;color:var(--g2);">Ipovedente lieve · Tremore alle mani · Cliente AssicuraMi</div>
+    </div>
+  </div>
+</div>
 
-      <p class="hero-sub">
-        Companion audio-first per utenti con difficoltà visive o motorie.
-        Guida passo per passo nel portale assicurativo con istruzioni vocali,
-        shortcut da tastiera e intelligenza adattiva.
-      </p>
+<!-- ═══ S2: IL PROBLEMA ═══ -->
+<div class="slide" id="s2" style="padding-top:4.5rem;">
+  <div class="lbl">Il Problema</div>
+  <h2>Il digitale esclude chi<br>ne ha più bisogno</h2>
+  <p class="sm mt1 mb2" style="max-width:620px;">Milioni di utenti over 65 si confrontano ogni giorno con portali progettati per chi vede bene e usa il mouse con precisione. Il risultato: abbandono, frustrazione e dipendenza da terzi.</p>
+  <div class="g3">
+    <div class="card" style="text-align:center;">
+      <div class="bignum">13M</div>
+      <h3 class="mb1">Over 65 in Italia</h3>
+      <p class="sm">Il 22% della popolazione — principali clienti del settore assicurativo</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="bignum">67%</div>
+      <h3 class="mb1">Abbandona il portale</h3>
+      <p class="sm">Dei senior che iniziano una procedura online la abbandonano prima di completarla (ISTAT)</p>
+    </div>
+    <div class="card" style="text-align:center;">
+      <div class="bignum">3.5M</div>
+      <h3 class="mb1">Con difficoltà visive</h3>
+      <p class="sm">Persone in Italia con deficit visivo che rendono difficile la lettura standard a schermo</p>
+    </div>
+  </div>
+</div>
 
-      <div>
-        <a href="../app/index.html" class="hero-cta" target="_blank">▶ Apri la Demo</a>
-        <a href="#soluzione" class="hero-secondary">Scopri come funziona →</a>
-      </div>
-
-      <div class="fade-in delay-2" style="display:flex;justify-content:center;">
-        <div class="hero-persona">
-          <div class="persona-avatar">👴</div>
+<!-- ═══ S3: MARIO ═══ -->
+<div class="slide" id="s3" style="padding-top:4.5rem;">
+  <div class="lbl">La Persona</div>
+  <h2>Mario Rossi, 68 anni</h2>
+  <div class="g2 mt2">
+    <div>
+      <div class="card card-ac mb2">
+        <div style="display:flex;align-items:center;gap:1rem;margin-bottom:.85rem;">
+          <div style="width:52px;height:52px;background:linear-gradient(135deg,var(--ac),#6600cc);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.7rem;flex-shrink:0;">👴</div>
           <div>
-            <div class="persona-name">Mario, 68 anni</div>
-            <div class="persona-desc">Ipovedente lieve · Tremore alle mani · Deve scaricare il suo attestato di rischio RC Auto</div>
+            <div style="font-weight:700;">Mario Rossi</div>
+            <div style="font-size:.78rem;color:var(--g2);">Pensionato · Roma · Cliente da 12 anni</div>
           </div>
         </div>
+        <p class="sm">Deve scaricare l'attestato di rischio RC Auto per il rinnovo. Sa usare email e browser, ma evita portali complessi per paura di sbagliare.</p>
+      </div>
+      <div class="card">
+        <h3 class="mb1">🎯 Obiettivo</h3>
+        <p class="sm mb1">Completare operazioni assicurative (attestato, sinistri) <strong>senza aiuto esterno</strong></p>
+        <p class="sm" style="color:var(--g2);">Fallback attuale: call center — <strong style="color:#ffab40;">40 min di attesa</strong></p>
       </div>
     </div>
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ════════════════════════════════════════════
-       2. IL PROBLEMA
-  ════════════════════════════════════════════ -->
-  <section id="problema">
-    <div class="label">Il Problema</div>
-    <h2>Il digitale esclude chi ne ha più bisogno</h2>
-    <p class="mt-2" style="max-width:650px;">
-      Milioni di utenti over 65 in Italia si confrontano ogni giorno con portali progettati
-      per chi vede bene e usa il mouse con precisione. Il risultato: abbandono, frustrazione
-      e dipendenza da terzi per operazioni basilari.
-    </p>
-
-    <div class="grid-3 mt-3">
-      <div class="card fade-in delay-1">
-        <div class="big-num">13M</div>
-        <h3 class="mb-1">Over 65 in Italia</h3>
-        <p class="text-sm">Rappresentano il 22% della popolazione e sono i principali clienti del settore assicurativo.</p>
-      </div>
-      <div class="card fade-in delay-2">
-        <div class="big-num">67%</div>
-        <h3 class="mb-1">Abbandona il portale</h3>
-        <p class="text-sm">Dei senior che iniziano una procedura online la abbandonano prima di completarla. (fonte: ISTAT)</p>
-      </div>
-      <div class="card fade-in delay-3">
-        <div class="big-num">3.5M</div>
-        <h3 class="mb-1">Con difficoltà visive</h3>
-        <p class="text-sm">Persone in Italia con deficit visivo che rendono difficile la lettura di testi standard a schermo.</p>
-      </div>
-    </div>
-
-    <div class="card card-accent mt-3 fade-in delay-2">
-      <h3 class="mb-2">Le barriere di Mario</h3>
-      <div class="grid-2">
+    <div class="card card-ac">
+      <h3 class="mb2">Le barriere di Mario</h3>
+      <div style="display:flex;flex-direction:column;gap:.9rem;">
         <div>
-          <p class="text-sm mb-1"><strong class="text-accent">👁️ Visiva:</strong> Font piccoli, icone non leggibili, aree cliccabili minuscole</p>
-          <p class="text-sm mb-1"><strong class="text-accent">✋ Motoria:</strong> Click precisi impossibili col tremore, drag impraticabile</p>
-          <p class="text-sm"><strong class="text-accent">🧭 Cognitiva:</strong> Navigazione a breadcrumb incomprensibile, nessun feedback vocale</p>
+          <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ac);margin-bottom:3px;">👁 Visiva</div>
+          <p class="sm">Font piccoli, icone non leggibili, aree cliccabili minuscole. Legge testi solo sopra i 20pt.</p>
         </div>
         <div>
-          <p class="text-sm mb-1"><strong class="text-accent">📋 Scenario:</strong> Mario deve scaricare il suo attestato di rischio RC Auto</p>
-          <p class="text-sm mb-1"><strong class="text-accent">❌ Senza aiuto:</strong> Abbandona dopo 2 minuti. Chiama il call center. Attende 40 minuti.</p>
-          <p class="text-sm"><strong class="text-accent">✅ Con VoceGuidata:</strong> Completa il percorso in autonomia in meno di 3 minuti.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ════════════════════════════════════════════
-       3. LA SOLUZIONE
-  ════════════════════════════════════════════ -->
-  <section id="soluzione">
-    <div class="label">La Soluzione</div>
-    <h2>Un companion vocale che si adatta a te</h2>
-    <p class="mt-2" style="max-width:650px;">
-      VoceGuidata si inserisce nel portale come un pannello laterale accessibile.
-      Legge ad alta voce le istruzioni, suggerisce shortcut da tastiera alternativi al mouse,
-      e cambia il suo comportamento in base alle difficoltà incontrate.
-    </p>
-
-    <div class="grid-2 mt-3">
-      <div class="card fade-in delay-1">
-        <div style="font-size:2rem;margin-bottom:0.75rem;">🎙️</div>
-        <h3 class="mb-1">TTS Audio-First</h3>
-        <p class="text-sm">Istruzioni vocali in italiano con Web Speech API. Nessuna dipendenza da librerie esterne. Funziona offline dopo il caricamento.</p>
-      </div>
-      <div class="card fade-in delay-2">
-        <div style="font-size:2rem;margin-bottom:0.75rem;">⌨️</div>
-        <h3 class="mb-1">Shortcut da Tastiera</h3>
-        <p class="text-sm">Alt+[lettera] per ogni azione principale. Niente click precisi, niente drag. Navigazione Tab con focus highlight viola ad alto contrasto.</p>
-      </div>
-      <div class="card fade-in delay-3">
-        <div style="font-size:2rem;margin-bottom:0.75rem;">🤖</div>
-        <h3 class="mb-1">Intelligenza Adattiva</h3>
-        <p class="text-sm">Claude AI genera istruzioni personalizzate in base al passo corrente e al numero di blocchi. Fallback statico se API non disponibile.</p>
-      </div>
-      <div class="card fade-in delay-4">
-        <div style="font-size:2rem;margin-bottom:0.75rem;">🔄</div>
-        <h3 class="mb-1">Escalation Progressiva</h3>
-        <p class="text-sm">Le istruzioni aumentano di dettaglio ad ogni difficoltà: orientamento → guida dettagliata → shortcut immediato come soluzione.</p>
-      </div>
-    </div>
-
-    <div class="card mt-3 fade-in delay-2">
-      <h3 class="mb-2">Architettura Tecnica</h3>
-      <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
-        <span class="skill-chip">🌐 Vanilla HTML/CSS/JS</span>
-        <span class="skill-chip">🎙️ Web Speech API</span>
-        <span class="skill-chip">🤖 Claude claude-haiku-4-5-20251001</span>
-        <span class="skill-chip">⌨️ KeyboardEvent API</span>
-        <span class="skill-chip">♿ WCAG AA</span>
-        <span class="skill-chip">📦 Zero dipendenze npm</span>
-        <span class="skill-chip">🌙 Dark theme accessibile</span>
-        <span class="skill-chip">📱 No server richiesto</span>
-      </div>
-    </div>
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ════════════════════════════════════════════
-       4. CAPABILITY AGENTICA — con SVG diagram
-  ════════════════════════════════════════════ -->
-  <section id="agentica">
-    <div class="label">Capability Agentica</div>
-    <h2>Block Detection + Adaptive Output</h2>
-    <p class="mt-2" style="max-width:650px;">
-      La capability core di VoceGuidata è la capacità di rilevare autonomamente quando
-      l'utente si blocca e scegliere il canale di output più efficace per aiutarlo.
-    </p>
-
-    <!-- SVG Diagramma flusso agentico -->
-    <div class="card mt-3" style="padding:1.5rem 1rem;">
-      <svg viewBox="0 0 900 420" xmlns="http://www.w3.org/2000/svg"
-           style="width:100%;height:auto;display:block;" aria-label="Diagramma flusso agentico VoceGuidata">
-        <defs>
-          <marker id="arrow" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#A100FF"/>
-          </marker>
-          <marker id="arrow-gray" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
-            <polygon points="0 0, 10 3.5, 0 7" fill="#606080"/>
-          </marker>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
-            <feMerge><feMergeNode in="coloredBlur"/><feMergeNode in="SourceGraphic"/></feMerge>
-          </filter>
-        </defs>
-
-        <!-- Background panels -->
-        <rect x="10" y="10" width="880" height="400" rx="16" fill="#0d000f" stroke="#2a002a" stroke-width="1.5"/>
-
-        <!-- TRIGGER BOX -->
-        <rect x="30" y="40" width="180" height="340" rx="12" fill="rgba(161,0,255,0.07)" stroke="rgba(161,0,255,0.3)" stroke-width="1"/>
-        <text x="120" y="68" text-anchor="middle" fill="#A100FF" font-family="Inter,sans-serif" font-size="11" font-weight="700" letter-spacing="1">TRIGGER</text>
-
-        <rect x="50" y="82" width="140" height="44" rx="8" fill="rgba(161,0,255,0.15)" stroke="#A100FF" stroke-width="1.5" filter="url(#glow)"/>
-        <text x="120" y="100" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Cambio step</text>
-        <text x="120" y="116" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">Portal.advance()</text>
-
-        <rect x="50" y="142" width="140" height="44" rx="8" fill="rgba(161,0,255,0.15)" stroke="#A100FF" stroke-width="1.5"/>
-        <text x="120" y="160" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Inattività > 15s</text>
-        <text x="120" y="176" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">detectStuck()</text>
-
-        <rect x="50" y="202" width="140" height="44" rx="8" fill="rgba(161,0,255,0.15)" stroke="#A100FF" stroke-width="1.5"/>
-        <text x="120" y="220" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Pulsante Aiuto</text>
-        <text x="120" y="236" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">requestHelp()</text>
-
-        <!-- Arrow from triggers to agent -->
-        <line x1="190" y1="164" x2="248" y2="164" stroke="#A100FF" stroke-width="2" marker-end="url(#arrow)"/>
-        <line x1="190" y1="224" x2="248" y2="224" stroke="#A100FF" stroke-width="2" marker-end="url(#arrow)"/>
-        <line x1="190" y1="104" x2="248" y2="164" stroke="#A100FF" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
-
-        <!-- AGENT CORE BOX -->
-        <rect x="250" y="110" width="200" height="110" rx="12" fill="rgba(161,0,255,0.2)" stroke="#A100FF" stroke-width="2" filter="url(#glow)"/>
-        <text x="350" y="138" text-anchor="middle" fill="#CC55FF" font-family="Inter,sans-serif" font-size="11" font-weight="700" letter-spacing="1">AGENTE AI</text>
-        <text x="350" y="158" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10">getContextualHelp()</text>
-        <text x="350" y="176" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">step + stuckCount + apiKey</text>
-        <text x="350" y="195" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">→ istruzione adattiva</text>
-
-        <!-- Decision diamond (API key?) -->
-        <polygon points="350,240 395,270 350,300 305,270" fill="rgba(161,0,255,0.12)" stroke="#A100FF" stroke-width="1.5"/>
-        <text x="350" y="265" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="9" font-weight="600">API key?</text>
-        <text x="350" y="278" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8">disponibile?</text>
-
-        <!-- Arrow from core to diamond -->
-        <line x1="350" y1="220" x2="350" y2="238" stroke="#A100FF" stroke-width="1.5" marker-end="url(#arrow)"/>
-
-        <!-- Claude API path (YES) -->
-        <line x1="395" y1="270" x2="480" y2="270" stroke="#A100FF" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <text x="435" y="264" text-anchor="middle" fill="#00e676" font-family="Inter,sans-serif" font-size="9">SÌ</text>
-        <rect x="482" y="250" width="130" height="40" rx="8" fill="rgba(0,230,118,0.1)" stroke="rgba(0,230,118,0.4)" stroke-width="1.5"/>
-        <text x="547" y="266" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Claude API</text>
-        <text x="547" y="280" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8">claude-haiku-4-5-20251001</text>
-
-        <!-- Static fallback path (NO) -->
-        <line x1="350" y1="300" x2="350" y2="330" stroke="#606080" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow-gray)"/>
-        <text x="330" y="318" text-anchor="middle" fill="#606080" font-family="Inter,sans-serif" font-size="9">NO</text>
-        <rect x="280" y="332" width="140" height="36" rx="8" fill="rgba(255,255,255,0.04)" stroke="#606080" stroke-width="1" stroke-dasharray="4 2"/>
-        <text x="350" y="350" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="10" font-weight="600">Fallback statico</text>
-        <text x="350" y="362" text-anchor="middle" fill="#606080" font-family="Inter,sans-serif" font-size="8">istruzioni predefinite</text>
-
-        <!-- Both converge to OUTPUT -->
-        <line x1="612" y1="270" x2="660" y2="200" stroke="#A100FF" stroke-width="1.5" marker-end="url(#arrow)"/>
-        <line x1="420" y1="350" x2="660" y2="280" stroke="#606080" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#arrow-gray)"/>
-
-        <!-- OUTPUT BOX -->
-        <rect x="662" y="90" width="210" height="290" rx="12" fill="rgba(161,0,255,0.07)" stroke="rgba(161,0,255,0.3)" stroke-width="1"/>
-        <text x="767" y="118" text-anchor="middle" fill="#A100FF" font-family="Inter,sans-serif" font-size="11" font-weight="700" letter-spacing="1">ADAPTIVE OUTPUT</text>
-
-        <rect x="678" y="130" width="178" height="42" rx="8" fill="rgba(161,0,255,0.15)" stroke="#A100FF" stroke-width="1.5"/>
-        <text x="767" y="148" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">🎙️ Voce (TTS)</text>
-        <text x="767" y="163" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">istruzione in it-IT</text>
-
-        <rect x="678" y="182" width="178" height="42" rx="8" fill="rgba(161,0,255,0.12)" stroke="rgba(161,0,255,0.5)" stroke-width="1"/>
-        <text x="767" y="200" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">📝 Testo grande</text>
-        <text x="767" y="215" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">pannello VoceGuidata</text>
-
-        <rect x="678" y="234" width="178" height="42" rx="8" fill="rgba(161,0,255,0.1)" stroke="rgba(161,0,255,0.4)" stroke-width="1"/>
-        <text x="767" y="252" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">⌨️ Shortcut hint</text>
-        <text x="767" y="267" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">Alt+[lettera] in evidenza</text>
-
-        <rect x="678" y="286" width="178" height="42" rx="8" fill="rgba(161,0,255,0.08)" stroke="rgba(161,0,255,0.3)" stroke-width="1"/>
-        <text x="767" y="304" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">✨ Overlay visivo</text>
-        <text x="767" y="319" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">feedback schermo intero</text>
-
-        <!-- stuckCount label -->
-        <text x="350" y="390" text-anchor="middle" fill="#606080" font-family="Inter,sans-serif" font-size="9">stuckCount: 0=standard · 1=espanso · ≥2=shortcut in primo piano</text>
-      </svg>
-    </div>
-
-    <div class="grid-2 mt-3">
-      <div class="card card-accent fade-in delay-1">
-        <h3 class="mb-2">🔍 Block Detection</h3>
-        <p class="text-sm mb-2">L'agente monitora continuamente l'attività dell'utente con un timer di 15 secondi. Se non viene rilevata nessuna azione (click, Tab, shortcut), scatta il rilevamento blocco.</p>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <div style="font-size:0.8rem;color:var(--gray-2);">• Timer per step: 15 secondi</div>
-          <div style="font-size:0.8rem;color:var(--gray-2);">• Check interval: ogni 5 secondi</div>
-          <div style="font-size:0.8rem;color:var(--gray-2);">• Reset: ad ogni azione utente</div>
-        </div>
-      </div>
-      <div class="card card-accent fade-in delay-2">
-        <h3 class="mb-2">📡 Adaptive Output</h3>
-        <p class="text-sm mb-2">Il canale di output cambia in base allo stato dell'utente. Con molti blocchi, il testo diventa primario e lo shortcut da tastiera l'âncora di salvataggio.</p>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;">
-          <div style="font-size:0.8rem;color:var(--gray-2);">• stuck=0: voce + testo</div>
-          <div style="font-size:0.8rem;color:var(--gray-2);">• stuck=1: voce + testo espanso</div>
-          <div style="font-size:0.8rem;color:var(--gray-2);">• stuck≥2: shortcut in primo piano</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ════════════════════════════════════════════
-       5. BEFORE / AFTER
-  ════════════════════════════════════════════ -->
-  <section id="before-after">
-    <div class="label">Demo Before / After</div>
-    <h2>Lo stesso portale, due esperienze diverse</h2>
-    <p class="mt-2" style="max-width:650px;">Mario, 68 anni, vuole scaricare il suo attestato RC Auto. Due scenari: senza e con VoceGuidata.</p>
-
-    <div class="ba-grid mt-3">
-      <div class="card ba-before fade-in delay-1">
-        <div class="ba-label">❌ Prima — Senza VoceGuidata</div>
-        <div class="ba-step">
-          <span class="ba-icon">😰</span>
-          <div class="ba-text">Mario apre il portale. La pagina è piena di testo piccolo. Non capisce dove cliccare.</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">🖱️</span>
-          <div class="ba-text">Prova a cliccare su "Documenti" ma con il tremore prende il link sbagliato. Finisce in una pagina inaspettata.</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">😤</span>
-          <div class="ba-text">Dopo 3 tentativi falliti torna al punto di partenza. Non capisce il percorso di navigazione.</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">📞</span>
-          <div class="ba-text">Chiama il call center. Attende 40 minuti in coda. Operatore gli spiega come fare al telefono.</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">🕐</span>
-          <div class="ba-text">Tempo totale: <strong>45+ minuti</strong>. Frustrazione alta. Dipendenza confermata.</div>
-        </div>
-      </div>
-
-      <div class="card ba-after fade-in delay-2">
-        <div class="ba-label">✅ Dopo — Con VoceGuidata</div>
-        <div class="ba-step">
-          <span class="ba-icon">🎙️</span>
-          <div class="ba-text">Mario preme "Avvia VoceGuidata". Una voce calma dice: "Benvenuto. Iniziamo dal login."</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">⌨️</span>
-          <div class="ba-text">La voce dice: "Per accedere, premi Alt e la lettera A." Mario preme. Il login avviene in automatico.</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">📁</span>
-          <div class="ba-text">Guidato passo per passo: Alt+D → Documenti, Alt+R → Attestato, Alt+C → Polizza.</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">📥</span>
-          <div class="ba-text">Alt+S: il PDF viene scaricato. La voce dice: "Ottimo! Hai scaricato il tuo attestato con successo."</div>
-        </div>
-        <div class="ba-step">
-          <span class="ba-icon">🏆</span>
-          <div class="ba-text">Tempo totale: <strong style="color:var(--success)">meno di 3 minuti</strong>. Completa autonomia. Zero frustrazione.</div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ════════════════════════════════════════════
-       6. DELIVERABLES
-  ════════════════════════════════════════════ -->
-  <section id="deliverables">
-    <div class="label">Deliverable Hagenthon</div>
-    <h2>Prove di valore</h2>
-
-    <!-- Deliverable 01: Learner Profile Statement -->
-    <div class="card mt-3 fade-in delay-1">
-      <div class="deliverable-num">Deliverable 01</div>
-      <h3 class="mb-2">Learner Profile Statement</h3>
-      <p class="text-sm mb-2">Descrizione strutturata del profilo dell'utente target e delle sue esigenze di apprendimento digitale.</p>
-
-      <div class="quote-box">
-        <p>"Mario Rossi, 68 anni, pensionato. Ipovedente lieve: legge testi solo sopra i 20pt. Tremore essenziale alle mani: click precisi e trascinamenti impraticabili. Competenza digitale di base: sa usare email e browser ma evita portali complessi. Ha uno smartphone Android e usa il computer Windows di casa. Il suo obiettivo immediato è scaricare l'attestato di rischio RC Auto per il rinnovo assicurativo. Obiettivo di lungo termine: acquisire autonomia digitale per gestire in proprio le pratiche assicurative senza dipendere da familiari o call center."</p>
-      </div>
-
-      <div class="grid-3 mt-2">
-        <div>
-          <div class="text-accent" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Barriere</div>
-          <p class="text-sm">Visive · Motorie · Cognitive · Navigazione</p>
+          <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ac);margin-bottom:3px;">✋ Motoria</div>
+          <p class="sm">Click precisi impossibili col tremore essenziale. Drag and drop impraticabile.</p>
         </div>
         <div>
-          <div class="text-accent" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Canali preferiti</div>
-          <p class="text-sm">Voce · Testo grande · Tastiera · Feedback immediato</p>
+          <div style="font-size:.68rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--ac);margin-bottom:3px;">🧭 Cognitiva</div>
+          <p class="sm">Navigazione a breadcrumb incomprensibile. Nessun feedback vocale. Paura di fare errori irreversibili.</p>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ S4: LA SOLUZIONE ═══ -->
+<div class="slide" id="s4" style="padding-top:4.5rem;">
+  <div class="lbl">La Soluzione</div>
+  <h2>Un companion vocale<br>che si adatta a te</h2>
+  <p class="sm mt1 mb2" style="max-width:640px;">VoceGuidata si inserisce nel portale come pannello laterale accessibile. Legge le istruzioni ad alta voce, suggerisce shortcut da tastiera e aumenta il dettaglio ad ogni difficoltà.</p>
+  <div class="g4">
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:.5rem;">🎙️</div>
+      <h3 class="mb1" style="font-size:.92rem;">TTS Audio-First</h3>
+      <p class="sm">Voce italiana neurale. Web Speech API + OpenAI TTS-HD opzionale. Funziona senza API key.</p>
+    </div>
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:.5rem;">⌨️</div>
+      <h3 class="mb1" style="font-size:.92rem;">Shortcut Tastiera</h3>
+      <p class="sm">Alt+[lettera] per ogni azione principale. Tab con focus highlight viola ad alto contrasto.</p>
+    </div>
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:.5rem;">🤖</div>
+      <h3 class="mb1" style="font-size:.92rem;">Intelligenza Adattiva</h3>
+      <p class="sm">Claude AI genera istruzioni personalizzate. Fallback statico sempre disponibile offline.</p>
+    </div>
+    <div class="card">
+      <div style="font-size:1.8rem;margin-bottom:.5rem;">🔄</div>
+      <h3 class="mb1" style="font-size:.92rem;">Escalation Progressiva</h3>
+      <p class="sm">Orientamento → guida → shortcut. Il dettaglio aumenta automaticamente ad ogni blocco.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ S5: DUE FLUSSI ═══ -->
+<div class="slide" id="s5" style="padding-top:4.5rem;">
+  <div class="lbl">Demo Funzionante</div>
+  <h2>Due scenari guidati<br>nel portale AssicuraMi</h2>
+  <div class="g2 mt2">
+    <div class="card card-ac">
+      <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;">
+        <span style="font-size:1.7rem;">📄</span>
         <div>
-          <div class="text-accent" style="font-size:0.75rem;font-weight:700;text-transform:uppercase;letter-spacing:0.08em;margin-bottom:4px;">Successo misurato</div>
-          <p class="text-sm">Download completato in &lt;3 min senza aiuto esterno</p>
+          <div style="font-weight:700;">Attestato di Rischio</div>
+          <div style="font-size:.72rem;color:var(--g2);">5 step</div>
         </div>
       </div>
-    </div>
-
-    <!-- Deliverable 02: Adaptive Evidence -->
-    <div class="card mt-3 fade-in delay-2">
-      <div class="deliverable-num">Deliverable 02</div>
-      <h3 class="mb-2">Adaptive Evidence — Esempio Concreto Prima/Dopo del Messaggio</h3>
-      <p class="text-sm mb-2">
-        Come cambia il messaggio di VoceGuidata quando Mario si blocca allo <strong>step 3 (Documenti)</strong>
-        in base al numero di richieste di aiuto (stuckCount).
-      </p>
-
-      <div style="display:flex;flex-direction:column;gap:1rem;margin-top:1rem;">
-
-        <div class="evidence-grid">
-          <div class="evidence-before">
-            <div class="ev-label">stuckCount = 0 (primo arrivo)</div>
-            <div class="ev-msg">"Vedi la lista dei tuoi documenti. Cerca e seleziona Attestato di Rischio RC Auto."</div>
-            <p style="font-size:0.75rem;color:var(--gray-3);margin-top:6px;">→ Orientamento · Breve · Nessun shortcut</p>
-          </div>
-          <div class="evidence-after">
-            <div class="ev-label">Obiettivo adattivo</div>
-            <p style="font-size:0.85rem;color:var(--gray-1);">L'utente ha appena cambiato step. Ha bisogno di orientarsi, non di dettagli. Il messaggio è breve e contestuale.</p>
-          </div>
-        </div>
-
-        <div class="evidence-grid">
-          <div class="evidence-before">
-            <div class="ev-label">stuckCount = 1 (dopo 1 blocco)</div>
-            <div class="ev-msg">"L'Attestato di Rischio è il primo documento della lista. Clicca su di esso o premi Tab per raggiungerlo."</div>
-            <p style="font-size:0.75rem;color:var(--gray-3);margin-top:6px;">→ Dettaglio · Percorso alternativo (Tab)</p>
-          </div>
-          <div class="evidence-after">
-            <div class="ev-label">Adattamento</div>
-            <p style="font-size:0.85rem;color:var(--gray-1);">L'agente ha rilevato difficoltà. Aggiunge dove si trova il documento e offre un'alternativa al click (tasto Tab).</p>
-          </div>
-        </div>
-
-        <div class="evidence-grid">
-          <div class="evidence-before">
-            <div class="ev-label">stuckCount ≥ 2 (blocco persistente)</div>
-            <div class="ev-msg">"Scorciatoia: premi Alt e la lettera R sulla tastiera. L'Attestato di Rischio verrà selezionato in automatico."</div>
-            <p style="font-size:0.75rem;color:var(--gray-3);margin-top:6px;">→ Shortcut in primo piano · Azione immediata</p>
-          </div>
-          <div class="evidence-after" style="border-color:rgba(161,0,255,0.3);background:rgba(161,0,255,0.06);">
-            <div class="ev-label" style="color:var(--accent);">Adattamento massimo</div>
-            <p style="font-size:0.85rem;color:var(--gray-1);">Il mouse è chiaramente inutilizzabile per Mario. L'agente mette la shortcut in primo piano come soluzione immediata e definitiva. Il canale si sposta su testo grande + voce shortcut.</p>
-          </div>
-        </div>
-
+      <div class="steps mb2">
+        <div class="step"><div class="step-b">🔐</div><div class="step-l">Login</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">🏠</div><div class="step-l">Dashboard</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">📁</div><div class="step-l">Documenti</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">🚗</div><div class="step-l">Polizza</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">📥</div><div class="step-l">Download</div></div>
       </div>
+      <p class="sm" style="color:var(--g2);">Shortcut: <span style="color:var(--acl);">Alt+A → Alt+R → Alt+C → Alt+S</span></p>
     </div>
-
-    <!-- Deliverable 03: Learning Outcome Note -->
-    <div class="card mt-3 fade-in delay-3">
-      <div class="deliverable-num">Deliverable 03</div>
-      <h3 class="mb-2">Learning Outcome Note</h3>
-      <p class="text-sm mb-2">Cosa impara Mario usando VoceGuidata — e come VoceGuidata impara da Mario.</p>
-
-      <div class="grid-2 mt-2">
+    <div class="card card-ac">
+      <div style="display:flex;align-items:center;gap:.7rem;margin-bottom:1rem;">
+        <span style="font-size:1.7rem;">🔔</span>
         <div>
-          <h3 style="font-size:1rem;margin-bottom:0.75rem;">Mario impara:</h3>
-          <div class="ba-step">
-            <span class="ba-icon">⌨️</span>
-            <div class="ba-text text-sm">I shortcut Alt+[lettera] come alternativa al mouse per ogni azione principale</div>
-          </div>
-          <div class="ba-step">
-            <span class="ba-icon">🔄</span>
-            <div class="ba-text text-sm">Il tasto Tab per navigare tra gli elementi senza cliccare</div>
-          </div>
-          <div class="ba-step">
-            <span class="ba-icon">🗺️</span>
-            <div class="ba-text text-sm">Il percorso a 5 step per scaricare l'attestato: lo ripeterà da solo la prossima volta</div>
-          </div>
-          <div class="ba-step">
-            <span class="ba-icon">💪</span>
-            <div class="ba-text text-sm">Che può usare i portali assicurativi in autonomia — riduzione della dipendenza</div>
-          </div>
+          <div style="font-weight:700;">Apertura Sinistro</div>
+          <div style="font-size:.72rem;color:var(--g2);">7 step</div>
         </div>
-        <div>
-          <h3 style="font-size:1rem;margin-bottom:0.75rem;">VoceGuidata impara (sessione):</h3>
-          <div class="ba-step">
-            <span class="ba-icon">📊</span>
-            <div class="ba-text text-sm">Quante volte l'utente si blocca per step — per ottimizzare il testo delle istruzioni</div>
-          </div>
-          <div class="ba-step">
-            <span class="ba-icon">⏱️</span>
-            <div class="ba-text text-sm">Tempo medio per step — identifica dove il portale crea più difficoltà</div>
-          </div>
-          <div class="ba-step">
-            <span class="ba-icon">⌨️</span>
-            <div class="ba-text text-sm">% azioni via shortcut vs. click — misura l'adozione del canale tastiera</div>
-          </div>
-          <div class="ba-step">
-            <span class="ba-icon">🎯</span>
-            <div class="ba-text text-sm">Tasso di completamento — obiettivo: 100% degli utenti con blocchi ≤ 2 per step</div>
-          </div>
-        </div>
+      </div>
+      <div class="steps mb2" style="flex-wrap:wrap;gap:4px;">
+        <div class="step"><div class="step-b">🔐</div><div class="step-l">Login</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">🏠</div><div class="step-l">Dashboard</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">💥</div><div class="step-l">Tipo</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">📅</div><div class="step-l">Evento</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">🔧</div><div class="step-l">Danni</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">📎</div><div class="step-l">Allegati</div></div>
+        <div class="arr"></div>
+        <div class="step"><div class="step-b">✅</div><div class="step-l">Conferma</div></div>
+      </div>
+      <p class="sm" style="color:var(--g2);">Shortcut: <span style="color:var(--acl);">Alt+T → Alt+P → Alt+P → Alt+A → Alt+I</span></p>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ S6: ARCHITETTURA ═══ -->
+<div class="slide" id="s6" style="padding-top:4.5rem;">
+  <div class="lbl">Architettura Tecnica</div>
+  <h2>Stack tecnologico</h2>
+  <div class="g2 mt2 mb2">
+    <div class="card">
+      <h3 class="mb2">📦 Moduli JavaScript</h3>
+      <div style="display:flex;flex-direction:column;gap:.55rem;">
+        <div class="sm"><span style="color:var(--acl);font-weight:600;">voice-guide.js</span> — TTS nativo + OpenAI TTS-HD opzionale</div>
+        <div class="sm"><span style="color:var(--acl);font-weight:600;">agent.js</span> — Claude API + fallback statico per ogni step</div>
+        <div class="sm"><span style="color:var(--acl);font-weight:600;">portal.js</span> — Portale AssicuraMi multi-flusso (attestato + sinistro)</div>
+        <div class="sm"><span style="color:var(--acl);font-weight:600;">keyboard-nav.js</span> — Shortcut globali Alt+[tasto]</div>
       </div>
     </div>
-
-  </section>
-
-  <div class="section-divider"></div>
-
-  <!-- ════════════════════════════════════════════
-       7. LIMITI E PROSSIMI PASSI
-  ════════════════════════════════════════════ -->
-  <section id="next-steps">
-    <div class="label">Prossimi Passi</div>
-    <h2>Limiti attuali e roadmap</h2>
-
-    <div class="grid-2 mt-3">
-      <div class="card fade-in delay-1">
-        <h3 class="mb-2">⚠️ Limiti del Prototipo</h3>
-        <div style="display:flex;flex-direction:column;gap:0.6rem;">
-          <p class="text-sm">• <strong>Portale simulato:</strong> i 5 step sono statici. Un'integrazione reale richiederebbe SDK del portale assicurativo.</p>
-          <p class="text-sm">• <strong>API key lato browser:</strong> per un prodotto reale l'API key deve essere gestita server-side.</p>
-          <p class="text-sm">• <strong>TTS variabile:</strong> la voce italiana dipende dalle voci installate nel sistema operativo.</p>
-          <p class="text-sm">• <strong>No persistenza:</strong> lo stato non viene salvato tra sessioni. Ogni apertura riparte da zero.</p>
-          <p class="text-sm">• <strong>Solo italiano:</strong> supporto multilingua da aggiungere per mercati internazionali.</p>
-        </div>
-      </div>
-      <div class="card fade-in delay-2">
-        <h3 class="mb-2">🚀 Roadmap</h3>
-        <div style="display:flex;flex-direction:column;gap:0.6rem;">
-          <p class="text-sm">• <strong>SDK integrabile:</strong> libreria JavaScript che si innesta su qualsiasi portale esistente via attributi HTML personalizzati</p>
-          <p class="text-sm">• <strong>Profilo utente persistente:</strong> salvataggio delle preferenze (velocità voce, font size, shortcut custom)</p>
-          <p class="text-sm">• <strong>Analytics accessibilità:</strong> dashboard per i team UX del portale con heatmap dei blocchi</p>
-          <p class="text-sm">• <strong>Computer vision:</strong> rilevamento automatico degli elementi cliccabili tramite screenshot + vision AI</p>
-          <p class="text-sm">• <strong>App mobile:</strong> companion vocale per portali assicurativi su smartphone</p>
-        </div>
+    <div class="card">
+      <h3 class="mb2">🎯 Decisioni chiave</h3>
+      <div style="display:flex;flex-direction:column;gap:.55rem;">
+        <div class="sm">✓ Zero dipendenze npm — nessun build step</div>
+        <div class="sm">✓ WCAG AA — contrasto ≥ 4.5:1, font base 18px</div>
+        <div class="sm">✓ Funziona senza API key (fallback statico completo)</div>
+        <div class="sm">✓ Python HTTP server per cors — nessun file://</div>
+        <div class="sm">✓ aria-live, aria-label su tutti i controlli interattivi</div>
       </div>
     </div>
-  </section>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:.35rem;">
+    <span class="chip">🌐 Vanilla HTML/CSS/JS</span>
+    <span class="chip">🎙️ Web Speech API</span>
+    <span class="chip">🤖 Claude Haiku</span>
+    <span class="chip">🔊 OpenAI TTS-HD</span>
+    <span class="chip">⌨️ KeyboardEvent API</span>
+    <span class="chip">♿ WCAG AA</span>
+    <span class="chip">📦 Zero npm</span>
+    <span class="chip">🐍 Python HTTP server</span>
+  </div>
+</div>
 
-  <div class="section-divider"></div>
+<!-- ═══ S7: AGENTE AI ═══ -->
+<div class="slide" id="s7" style="padding-top:4.5rem;">
+  <div class="lbl">Capability Agentica</div>
+  <h2>Block Detection + Adaptive Output</h2>
+  <div class="card mt2" style="padding:.9rem;flex:1;display:flex;align-items:center;">
+    <svg viewBox="0 0 900 330" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;" aria-label="Diagramma flusso agentico">
+      <defs>
+        <marker id="a" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#A100FF"/></marker>
+        <marker id="ag" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,10 3.5,0 7" fill="#606080"/></marker>
+      </defs>
+      <rect x="8" y="8" width="884" height="314" rx="14" fill="#0d000f" stroke="#2a002a" stroke-width="1.5"/>
+      <!-- TRIGGER -->
+      <rect x="28" y="28" width="178" height="260" rx="10" fill="rgba(161,0,255,.07)" stroke="rgba(161,0,255,.3)" stroke-width="1"/>
+      <text x="117" y="50" text-anchor="middle" fill="#A100FF" font-family="Inter,sans-serif" font-size="10" font-weight="700" letter-spacing="1">TRIGGER</text>
+      <rect x="46" y="62" width="140" height="38" rx="7" fill="rgba(161,0,255,.15)" stroke="#A100FF" stroke-width="1.5"/>
+      <text x="116" y="77" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Cambio step</text>
+      <text x="116" y="91" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">Portal.advance()</text>
+      <rect x="46" y="112" width="140" height="38" rx="7" fill="rgba(161,0,255,.15)" stroke="#A100FF" stroke-width="1.5"/>
+      <text x="116" y="127" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Inattività &gt; 15s</text>
+      <text x="116" y="141" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">detectStuck()</text>
+      <rect x="46" y="162" width="140" height="38" rx="7" fill="rgba(161,0,255,.15)" stroke="#A100FF" stroke-width="1.5"/>
+      <text x="116" y="177" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Pulsante Aiuto</text>
+      <text x="116" y="191" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">requestHelp()</text>
+      <!-- arrows trigger→agent -->
+      <line x1="186" y1="131" x2="242" y2="131" stroke="#A100FF" stroke-width="2" marker-end="url(#a)"/>
+      <line x1="186" y1="181" x2="242" y2="181" stroke="#A100FF" stroke-width="2" marker-end="url(#a)"/>
+      <line x1="186" y1="81" x2="242" y2="131" stroke="#A100FF" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#a)"/>
+      <!-- AGENT -->
+      <rect x="244" y="98" width="196" height="82" rx="10" fill="rgba(161,0,255,.2)" stroke="#A100FF" stroke-width="2"/>
+      <text x="342" y="120" text-anchor="middle" fill="#CC55FF" font-family="Inter,sans-serif" font-size="10" font-weight="700" letter-spacing="1">AGENTE AI</text>
+      <text x="342" y="139" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10">getContextualHelp()</text>
+      <text x="342" y="155" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">step + stuckCount + apiKey</text>
+      <text x="342" y="170" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9">→ istruzione adattiva</text>
+      <!-- diamond -->
+      <polygon points="342,205 380,230 342,255 304,230" fill="rgba(161,0,255,.12)" stroke="#A100FF" stroke-width="1.5"/>
+      <text x="342" y="226" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="9" font-weight="600">API</text>
+      <text x="342" y="238" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8">key?</text>
+      <line x1="342" y1="180" x2="342" y2="203" stroke="#A100FF" stroke-width="1.5" marker-end="url(#a)"/>
+      <!-- sì → claude -->
+      <line x1="380" y1="230" x2="450" y2="230" stroke="#A100FF" stroke-width="1.5" marker-end="url(#a)"/>
+      <text x="413" y="224" text-anchor="middle" fill="#00e676" font-family="Inter,sans-serif" font-size="9">SÌ</text>
+      <rect x="452" y="214" width="120" height="32" rx="7" fill="rgba(0,230,118,.1)" stroke="rgba(0,230,118,.4)" stroke-width="1.5"/>
+      <text x="512" y="228" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">Claude API</text>
+      <text x="512" y="240" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8">claude-haiku-4-5</text>
+      <!-- no → fallback -->
+      <line x1="342" y1="255" x2="342" y2="278" stroke="#606080" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+      <text x="325" y="270" text-anchor="middle" fill="#606080" font-family="Inter,sans-serif" font-size="9">NO</text>
+      <rect x="278" y="280" width="128" height="28" rx="7" fill="rgba(255,255,255,.03)" stroke="#606080" stroke-width="1" stroke-dasharray="4 2"/>
+      <text x="342" y="298" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="9" font-weight="600">Fallback statico</text>
+      <!-- converge → output -->
+      <line x1="572" y1="230" x2="630" y2="175" stroke="#A100FF" stroke-width="1.5" marker-end="url(#a)"/>
+      <line x1="406" y1="294" x2="630" y2="245" stroke="#606080" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ag)"/>
+      <!-- OUTPUT -->
+      <rect x="632" y="72" width="220" height="222" rx="10" fill="rgba(161,0,255,.07)" stroke="rgba(161,0,255,.3)" stroke-width="1"/>
+      <text x="742" y="94" text-anchor="middle" fill="#A100FF" font-family="Inter,sans-serif" font-size="10" font-weight="700" letter-spacing="1">ADAPTIVE OUTPUT</text>
+      <rect x="648" y="104" width="188" height="34" rx="7" fill="rgba(161,0,255,.15)" stroke="#A100FF" stroke-width="1.5"/>
+      <text x="742" y="119" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">🎙️ Voce (TTS)</text>
+      <text x="742" y="131" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8.5">istruzione in italiano</text>
+      <rect x="648" y="146" width="188" height="34" rx="7" fill="rgba(161,0,255,.12)" stroke="rgba(161,0,255,.5)" stroke-width="1"/>
+      <text x="742" y="161" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">📝 Testo grande</text>
+      <text x="742" y="173" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8.5">pannello VoceGuidata</text>
+      <rect x="648" y="188" width="188" height="34" rx="7" fill="rgba(161,0,255,.1)" stroke="rgba(161,0,255,.4)" stroke-width="1"/>
+      <text x="742" y="203" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">⌨️ Shortcut hint</text>
+      <text x="742" y="215" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8.5">Alt+[lettera] in evidenza</text>
+      <rect x="648" y="230" width="188" height="34" rx="7" fill="rgba(161,0,255,.08)" stroke="rgba(161,0,255,.3)" stroke-width="1"/>
+      <text x="742" y="245" text-anchor="middle" fill="white" font-family="Inter,sans-serif" font-size="10" font-weight="600">✨ Overlay visivo</text>
+      <text x="742" y="257" text-anchor="middle" fill="#a0a0c0" font-family="Inter,sans-serif" font-size="8.5">feedback immediato</text>
+      <text x="440" y="322" text-anchor="middle" fill="#606080" font-family="Inter,sans-serif" font-size="8.5">stuckCount: 0 = standard · 1 = espanso · ≥2 = shortcut in primo piano</text>
+    </svg>
+  </div>
+</div>
 
-  <!-- ════════════════════════════════════════════
-       FOOTER
-  ════════════════════════════════════════════ -->
-  <footer>
-    <p style="margin-bottom:0.4rem;">
-      <strong>Hagenthon</strong> &rsaquo; <strong>Accenture Application Engineering</strong> &rsaquo; Tema 03: Educazione Digitale Inclusiva
-    </p>
-    <p>
-      VoceGuidata — Companion audio-first per portali assicurativi &nbsp;·&nbsp;
-      <a href="mailto:andrea.loris.gialain@accenture.com" style="color:var(--accent);text-decoration:none;">andrea.loris.gialain@accenture.com</a>
-    </p>
-    <p style="margin-top:0.5rem;font-size:0.75rem;color:var(--gray-3);">
-      Built with Claude claude-haiku-4-5-20251001 · Web Speech API · Vanilla HTML/CSS/JS · Zero dipendenze npm
-    </p>
-  </footer>
+<!-- ═══ S8: ADAPTIVE EVIDENCE ═══ -->
+<div class="slide" id="s8" style="padding-top:4.5rem;">
+  <div class="lbl">Adaptive Evidence</div>
+  <h2>Come cambia il messaggio<br>allo step Documenti</h2>
+  <div class="mt2">
+    <div class="ev-g">
+      <div class="ev-bx ev-b">
+        <div class="ev-lbl">stuckCount = 0 (primo arrivo)</div>
+        <div class="ev-msg">"Vedi la lista dei tuoi documenti. Cerca e seleziona Attestato di Rischio RC Auto."</div>
+        <p style="font-size:.7rem;color:var(--g3);margin-top:4px;">→ Orientamento · breve · nessun shortcut</p>
+      </div>
+      <div class="ev-bx ev-a">
+        <div class="ev-lbl" style="color:var(--ok);">Obiettivo</div>
+        <p style="font-size:.8rem;color:var(--g1);">L'utente ha appena cambiato step. Ha bisogno di orientarsi, non di dettagli. Messaggio breve e contestuale.</p>
+      </div>
+    </div>
+    <div class="ev-g">
+      <div class="ev-bx ev-b">
+        <div class="ev-lbl">stuckCount = 1 (dopo 1 blocco)</div>
+        <div class="ev-msg">"L'Attestato di Rischio è il primo documento della lista. Clicca su di esso o premi Tab per raggiungerlo."</div>
+        <p style="font-size:.7rem;color:var(--g3);margin-top:4px;">→ Dettaglio · percorso alternativo (Tab)</p>
+      </div>
+      <div class="ev-bx ev-a">
+        <div class="ev-lbl" style="color:var(--ok);">Adattamento</div>
+        <p style="font-size:.8rem;color:var(--g1);">L'agente rileva difficoltà. Aggiunge dove si trova il documento e offre alternativa al click.</p>
+      </div>
+    </div>
+    <div class="ev-g">
+      <div class="ev-bx ev-b">
+        <div class="ev-lbl">stuckCount ≥ 2 (blocco persistente)</div>
+        <div class="ev-msg">"Scorciatoia: premi Alt+R sulla tastiera. L'Attestato verrà selezionato automaticamente."</div>
+        <p style="font-size:.7rem;color:var(--g3);margin-top:4px;">→ Shortcut in primo piano · azione immediata</p>
+      </div>
+      <div class="ev-bx ev-ac">
+        <div class="ev-lbl">Adattamento massimo</div>
+        <p style="font-size:.8rem;color:var(--g1);">Il mouse è inutilizzabile. L'agente porta la shortcut in primo piano come soluzione definitiva. Testo grande + voce shortcut.</p>
+      </div>
+    </div>
+  </div>
+</div>
 
-  <!-- Intersection Observer per animazioni fade-in -->
-  <script>
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach(entry => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('fade-in');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.12 });
+<!-- ═══ S9: BEFORE / AFTER ═══ -->
+<div class="slide" id="s9" style="padding-top:4.5rem;">
+  <div class="lbl">Before / After</div>
+  <h2>Lo stesso portale,<br>due esperienze diverse</h2>
+  <div class="g2 mt2">
+    <div class="card ba-b">
+      <div class="ba-lbl">❌ Senza VoceGuidata</div>
+      <div class="ba-row"><span class="ba-ico">😰</span><div class="ba-txt">Mario apre il portale. Testo piccolo ovunque. Non capisce dove cliccare.</div></div>
+      <div class="ba-row"><span class="ba-ico">🖱️</span><div class="ba-txt">Col tremore prende il link sbagliato. Finisce in una pagina inaspettata.</div></div>
+      <div class="ba-row"><span class="ba-ico">😤</span><div class="ba-txt">Dopo 3 tentativi torna al punto di partenza senza aver capito il percorso.</div></div>
+      <div class="ba-row"><span class="ba-ico">📞</span><div class="ba-txt">Chiama il call center. Attende <strong>40 minuti</strong> in coda. Frustrazione massima.</div></div>
+      <div style="background:rgba(255,82,82,.1);border-radius:8px;padding:.45rem .7rem;font-size:.82rem;margin-top:.4rem;">
+        ⏱ Tempo totale: <strong>45+ minuti</strong> · Dipendenza confermata
+      </div>
+    </div>
+    <div class="card ba-a">
+      <div class="ba-lbl">✅ Con VoceGuidata</div>
+      <div class="ba-row"><span class="ba-ico">🎙️</span><div class="ba-txt">Mario preme "Avvia". Una voce calma dice: "Benvenuto. Iniziamo dal login."</div></div>
+      <div class="ba-row"><span class="ba-ico">⌨️</span><div class="ba-txt">"Per accedere premi Alt+A." Mario preme. Login automatico senza click precisi.</div></div>
+      <div class="ba-row"><span class="ba-ico">📁</span><div class="ba-txt">Guidato passo per passo: Alt+R → Attestato, Alt+C → Polizza.</div></div>
+      <div class="ba-row"><span class="ba-ico">📥</span><div class="ba-txt">Alt+S: PDF scaricato. "Ottimo! Hai completato in autonomia."</div></div>
+      <div style="background:rgba(0,230,118,.1);border-radius:8px;padding:.45rem .7rem;font-size:.82rem;margin-top:.4rem;">
+        ⏱ Tempo totale: <strong style="color:var(--ok);">meno di 3 minuti</strong> · Completa autonomia
+      </div>
+    </div>
+  </div>
+</div>
 
-    // Osserva card e sezioni
-    document.querySelectorAll('.card, section > p, section > h2').forEach(el => {
-      if (!el.classList.contains('fade-in')) {
-        el.style.opacity = '0';
-        observer.observe(el);
-      }
-    });
+<!-- ═══ S10: DELIVERABLES ═══ -->
+<div class="slide" id="s10" style="padding-top:4.5rem;">
+  <div class="lbl">Deliverable Hagenthon</div>
+  <h2>Prove di valore</h2>
+  <div class="g3 mt2">
+    <div class="card card-ac">
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:.35rem;">Deliverable 01</div>
+      <h3 class="mb2" style="font-size:.92rem;">Learner Profile Statement</h3>
+      <p class="sm mb2">Profilo strutturato di Mario: barriere, canali preferiti, obiettivo misurabile di apprendimento digitale.</p>
+      <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.76rem;color:var(--g2);">
+        <div><span class="ac">Barriere:</span> visive · motorie · cognitive</div>
+        <div><span class="ac">Canali:</span> voce · testo grande · tastiera</div>
+        <div><span style="color:var(--ok);">✓ Successo:</span> download in &lt;3 min autonomo</div>
+      </div>
+    </div>
+    <div class="card card-ac">
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:.35rem;">Deliverable 02</div>
+      <h3 class="mb2" style="font-size:.92rem;">Adaptive Evidence</h3>
+      <p class="sm mb2">Esempio concreto Prima/Dopo del messaggio adattivo a 3 livelli di blocco (stuckCount 0, 1, ≥2).</p>
+      <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.76rem;color:var(--g2);">
+        <div><span class="ac">stuck=0:</span> orientamento breve</div>
+        <div><span class="ac">stuck=1:</span> guida dettagliata + Tab</div>
+        <div><span class="ac">stuck≥2:</span> shortcut in primo piano</div>
+      </div>
+    </div>
+    <div class="card card-ac">
+      <div style="font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:var(--ac);margin-bottom:.35rem;">Deliverable 03</div>
+      <h3 class="mb2" style="font-size:.92rem;">Learning Outcome Note</h3>
+      <p class="sm mb2">Mario impara i shortcut e il percorso. VoceGuidata misura la sessione per migliorare.</p>
+      <div style="display:flex;flex-direction:column;gap:.45rem;font-size:.76rem;color:var(--g2);">
+        <div><span class="ac">Mario:</span> shortcut · Tab · percorso · autonomia</div>
+        <div><span class="ac">Agente:</span> blocchi per step · % shortcut · completamento</div>
+      </div>
+    </div>
+  </div>
+</div>
 
-    // Smooth scroll per nav links
-    document.querySelectorAll('a[href^="#"]').forEach(a => {
-      a.addEventListener('click', e => {
-        const target = document.querySelector(a.getAttribute('href'));
-        if (target) {
-          e.preventDefault();
-          target.scrollIntoView({ behavior: 'smooth', block: 'start' });
-        }
-      });
-    });
-  </script>
+<!-- ═══ S11: ROADMAP ═══ -->
+<div class="slide" id="s11" style="padding-top:4.5rem;">
+  <div class="lbl">Roadmap</div>
+  <h2>Limiti attuali e prossimi passi</h2>
+  <div class="g2 mt2">
+    <div class="card">
+      <h3 class="mb2">⚠️ Limiti del prototipo</h3>
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <p class="sm">• <strong>Portale simulato:</strong> integrazione reale richiede SDK del portale assicurativo</p>
+        <p class="sm">• <strong>API key lato browser:</strong> produzione richiede backend proxy sicuro</p>
+        <p class="sm">• <strong>No persistenza:</strong> stato resettato ad ogni sessione</p>
+        <p class="sm">• <strong>Solo italiano:</strong> supporto multilingua da aggiungere</p>
+        <p class="sm">• <strong>TTS variabile:</strong> dipende dalle voci installate (mitigato con OpenAI TTS)</p>
+      </div>
+    </div>
+    <div class="card">
+      <h3 class="mb2">🚀 Roadmap</h3>
+      <div style="display:flex;flex-direction:column;gap:.6rem;">
+        <p class="sm">• <strong>SDK integrabile:</strong> snippet JS su qualsiasi portale via attributi HTML</p>
+        <p class="sm">• <strong>Profilo persistente:</strong> preferenze voce, font size, shortcut custom</p>
+        <p class="sm">• <strong>Analytics accessibilità:</strong> heatmap dei blocchi per team UX</p>
+        <p class="sm">• <strong>Computer vision:</strong> rilevamento automatico elementi via screenshot + AI</p>
+        <p class="sm">• <strong>App mobile:</strong> companion vocale per portali su smartphone</p>
+      </div>
+    </div>
+  </div>
+</div>
 
+<!-- ═══ S12: GRAZIE ═══ -->
+<div class="slide center" id="s12">
+  <div style="margin-bottom:1rem;">
+    <span class="badge">🏆 Hagenthon 2025 · Accenture Application Engineering</span>
+  </div>
+  <h1 style="font-size:clamp(2.2rem,6vw,4rem);margin-bottom:.75rem;">
+    <span class="gtext">Grazie</span>
+  </h1>
+  <p style="font-size:1.1rem;color:var(--g2);max-width:560px;margin:.5rem auto 2rem;">
+    VoceGuidata dimostra che l'accessibilità non è un vincolo — è un'opportunità per ripensare il digitale a partire da chi ne ha più bisogno.
+  </p>
+  <div style="display:flex;gap:1rem;justify-content:center;margin-bottom:2rem;flex-wrap:wrap;">
+    <a href="../app/index.html" target="_blank"
+       style="padding:.7rem 1.8rem;background:var(--ac);color:#fff;border-radius:12px;font-weight:600;text-decoration:none;">
+      ▶ Demo live
+    </a>
+    <a href="https://github.com/AndreaGialain/Hagenthon_Insurance" target="_blank"
+       style="padding:.7rem 1.8rem;background:transparent;color:var(--g1);border:1px solid var(--bds);border-radius:12px;font-weight:500;text-decoration:none;">
+      📂 GitHub
+    </a>
+  </div>
+  <div style="font-size:.82rem;color:var(--g3);">
+    andrea.loris.gialain@accenture.com &nbsp;·&nbsp; Tema 03: Educazione Digitale Inclusiva
+  </div>
+</div>
+
+</div><!-- /deck -->
+
+<!-- Navigation -->
+<div id="nav">
+  <button id="bp" onclick="go(-1)" disabled>&#8249;</button>
+  <span id="sc">1 / 12</span>
+  <button id="bn" onclick="go(1)">&#8250;</button>
+</div>
+
+<script>
+const slides = Array.from(document.querySelectorAll('.slide'));
+const N = slides.length;
+let cur = 0;
+
+function go(dir) {
+  const nxt = cur + dir;
+  if (nxt < 0 || nxt >= N) return;
+  const prev = cur;
+  slides[prev].classList.remove('active');
+  slides[prev].classList.add(dir > 0 ? 'out-l' : 'out-r');
+  cur = nxt;
+  const s = slides[cur];
+  s.style.transition = 'none';
+  s.style.opacity = '0';
+  s.style.transform = dir > 0 ? 'translateX(40px)' : 'translateX(-40px)';
+  requestAnimationFrame(() => requestAnimationFrame(() => {
+    s.style.transition = '';
+    s.classList.add('active');
+  }));
+  setTimeout(() => { slides[prev].classList.remove('out-l','out-r'); }, 450);
+  sync();
+}
+
+function sync() {
+  document.getElementById('sc').textContent = (cur+1) + ' / ' + N;
+  document.getElementById('snum').textContent = (cur+1) + ' / ' + N;
+  document.getElementById('bar').style.width = ((cur+1)/N*100) + '%';
+  document.getElementById('bp').disabled = cur === 0;
+  document.getElementById('bn').disabled = cur === N-1;
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') { e.preventDefault(); go(1); }
+  if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                     { e.preventDefault(); go(-1); }
+});
+
+document.getElementById('deck').addEventListener('click', e => {
+  const x = e.clientX / window.innerWidth;
+  if (e.target.closest('a,button')) return;
+  if (x > .65) go(1); else if (x < .35) go(-1);
+});
+
+sync();
+</script>
 </body>
 </html>
