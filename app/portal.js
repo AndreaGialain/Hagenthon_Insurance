@@ -30,11 +30,11 @@ var Portal = (() => {
   // ── Nav bar (step 2+) ────────────────────────────────────────────
   function _navBar(active = 'dashboard') {
     const tabs = [
-      { id: 'polizze',    label: 'Le mie polizze',  icon: '📋' },
-      { id: 'documenti',  label: 'Documenti',         icon: '📁' },
-      { id: 'sinistri',   label: 'Sinistri',          icon: '🔔' },
-      { id: 'pagamenti',  label: 'Pagamenti',          icon: '💳' },
-      { id: 'assistenza', label: 'Assistenza',         icon: '💬' },
+      { id: 'polizze',    label: 'Le mie polizze',  icon: '📋', action: "Portal.goTo('dashboard')" },
+      { id: 'documenti',  label: 'Documenti',         icon: '📁', action: "Portal.startFlow('attestato')" },
+      { id: 'sinistri',   label: 'Sinistri',          icon: '🔔', action: "Portal.startFlow('sinistro')" },
+      { id: 'pagamenti',  label: 'Pagamenti',          icon: '💳', action: "Portal._notifyAction()" },
+      { id: 'assistenza', label: 'Assistenza',         icon: '💬', action: "Portal._notifyAction()" },
     ];
     return `
       <nav class="p-nav">
@@ -47,14 +47,14 @@ var Portal = (() => {
           <div class="p-nav-user">
             <span class="p-nav-avatar">MR</span>
             <span class="p-nav-name">Mario Rossi</span>
-            <button class="p-nav-logout" onclick="Portal._notifyAction()">Esci</button>
+            <button class="p-nav-logout" onclick="Portal.goTo('dashboard')">Esci</button>
           </div>
         </div>
         <div class="p-nav-tabs" role="tablist">
           ${tabs.map(t => `
             <button class="p-nav-tab ${t.id === active ? 'active' : ''}"
                     role="tab" aria-selected="${t.id === active}"
-                    onclick="Portal._notifyAction()"
+                    onclick="${t.action}"
                     aria-label="${t.label}">
               <span class="p-nav-tab-icon">${t.icon}</span>${t.label}
             </button>`).join('')}
