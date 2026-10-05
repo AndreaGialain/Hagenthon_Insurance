@@ -538,15 +538,13 @@ var Portal = (() => {
                 </div>
                 <div class="p-form-group">
                   <label class="p-form-label">Veicolo coinvolto *</label>
-                  <div class="p-radio-group" role="radiogroup">
-                    <label class="p-radio-row">
-                      <input type="radio" name="veicolo" value="EF482GH" checked>
-                      <span>EF 482 GH — Fiat Panda 1.2 (RC-2024-00847)</span>
-                    </label>
-                    <label class="p-radio-row">
-                      <input type="radio" name="veicolo" value="AB371CD">
-                      <span>AB 371 CD — Renault Clio 1.5 dCi (RC-2023-00312)</span>
-                    </label>
+                  <div class="p-sin-veicolo-display" aria-label="Veicolo selezionato">
+                    <span class="p-sin-veicolo-icon">🚗</span>
+                    <div>
+                      <div class="p-sin-veicolo-targa">EF 482 GH</div>
+                      <div class="p-sin-veicolo-desc">Fiat Panda 1.2 — Polizza RC-2024-00847</div>
+                    </div>
+                    <span class="p-chip active" style="margin-left:auto">RC Auto attiva</span>
                   </div>
                 </div>
               </div>
@@ -824,9 +822,10 @@ var Portal = (() => {
   }
 
   function startFlow(flowName) {
-    _flow    = flowName;
-    _steps   = FLOW_STEPS[flowName];
-    _stepIdx = 2; // salta login + dashboard
+    _flow     = flowName;
+    _steps    = FLOW_STEPS[flowName];
+    _stepIdx  = 2; // salta login + dashboard
+    _formData = {}; // reset dati form per il nuovo flusso
     _notifyAction();
     _renderStep();
     _notifyStepChange();
@@ -868,7 +867,7 @@ var Portal = (() => {
       _formData.citta    = g('sin-citta');
       _formData.via      = g('sin-via');
       _formData.dinamica = g('sin-dinamica');
-      _formData.veicolo  = r('veicolo') === 'AB371CD' ? 'AB 371 CD — Renault Clio' : 'EF 482 GH — Fiat Panda 1.2';
+      _formData.veicolo  = 'EF 482 GH — Fiat Panda 1.2';
     }
     if (stepId === 'sin_veicoli') {
       const altriSi = r('altri') === 'si';
@@ -1233,6 +1232,10 @@ var Portal = (() => {
     .p-sin-form { display:flex; flex-direction:column; gap:0; }
     .p-sin-row  { display:flex; gap:12px; }
     .p-sin-section-title { font-size:.78rem; font-weight:700; color:#1a2e6e; text-transform:uppercase; letter-spacing:.06em; margin:12px 0 8px; border-top:1px solid #e8ecf4; padding-top:12px; }
+    .p-sin-veicolo-display { display:flex; align-items:center; gap:12px; background:#f0f4ff; border:1.5px solid #b0c4e8; border-radius:8px; padding:12px 16px; }
+    .p-sin-veicolo-icon { font-size:1.5rem; }
+    .p-sin-veicolo-targa { font-size:1rem; font-weight:800; color:#1a2e6e; letter-spacing:.06em; }
+    .p-sin-veicolo-desc { font-size:.75rem; color:#666; margin-top:2px; }
 
     /* Allegati */
     .p-allegati-list { display:flex; flex-direction:column; gap:12px; }
