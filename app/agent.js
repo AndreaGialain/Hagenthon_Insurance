@@ -1,7 +1,7 @@
 /**
  * VoceGuidata — agent.js
- * Modulo intelligenza contestuale: chiamate a Claude API + fallback statico
- * Model: claude-haiku-4-5-20251001
+ * Intelligenza contestuale: Claude API (claude-haiku-4-5-20251001) + fallback statico.
+ * Supporta due flussi: attestato di rischio e apertura sinistro.
  */
 
 const AgentHelper = (() => {
@@ -11,97 +11,67 @@ const AgentHelper = (() => {
   const MODEL = 'claude-haiku-4-5-20251001';
   const DEFAULT_STUCK_THRESHOLD_MS = 15000;
 
-  // ── Istruzioni statiche per fallback (no API key) ──────────────────
+  // ── Istruzioni statiche per fallback (no API key) ──────────────────────
   const STATIC_INSTRUCTIONS = {
-    1: {
-      normal: {
-        text: 'Sei nella pagina di accesso. Inserisci il nome utente e la password, poi premi il pulsante Accedi.',
-        shortcut: 'Alt+A',
-        shortcutLabel: 'Accedere al portale'
-      },
-      stuck1: {
-        text: 'Puoi usare la tastiera: premi Tab per spostarti tra i campi. Quando sei sul pulsante Accedi, premi Invio.',
-        shortcut: 'Alt+A',
-        shortcutLabel: 'Accedere al portale'
-      },
-      stuck2: {
-        text: 'Scorciatoia rapida: premi insieme Alt e la lettera A. Il sistema farà accesso automaticamente con le credenziali di demo.',
-        shortcut: 'Alt+A',
-        shortcutLabel: 'Accedere al portale'
-      }
+    // ─ Comuni
+    login: {
+      normal: { text: 'Sei nella pagina di accesso. Inserisci il nome utente e la password, poi premi Accedi.', shortcut: 'Alt+A', shortcutLabel: 'Accedere al portale' },
+      stuck1: { text: 'Usa il tasto Tab per spostarti tra i campi. Quando sei sul pulsante Accedi, premi Invio.', shortcut: 'Alt+A', shortcutLabel: 'Accedere al portale' },
+      stuck2: { text: 'Scorciatoia: premi Alt+A per accedere automaticamente con le credenziali di demo.', shortcut: 'Alt+A', shortcutLabel: 'Accedere al portale' }
     },
-    2: {
-      normal: {
-        text: 'Sei nella tua area personale. Per vedere i documenti, cerca il pulsante Documenti nella barra di navigazione.',
-        shortcut: 'Alt+D',
-        shortcutLabel: 'Andare ai Documenti'
-      },
-      stuck1: {
-        text: 'Premi Tab per spostarti nella pagina. Il pulsante Documenti si trova nel menu principale in alto.',
-        shortcut: 'Alt+D',
-        shortcutLabel: 'Andare ai Documenti'
-      },
-      stuck2: {
-        text: 'Scorciatoia rapida: premi Alt e la lettera D per aprire direttamente la sezione Documenti.',
-        shortcut: 'Alt+D',
-        shortcutLabel: 'Andare ai Documenti'
-      }
+    dashboard: {
+      normal: { text: 'Sei nella tua area personale. Scegli cosa vuoi fare tra le opzioni disponibili.', shortcut: '', shortcutLabel: '' },
+      stuck1: { text: 'Per scaricare l\'attestato scegli "Attestato di Rischio". Per segnalare un incidente scegli "Apertura Sinistro".', shortcut: '', shortcutLabel: '' },
+      stuck2: { text: 'Usa il tasto Tab per spostarti tra le opzioni e Invio per selezionare quella desiderata.', shortcut: '', shortcutLabel: '' }
     },
-    3: {
-      normal: {
-        text: 'Vedi la lista dei tuoi documenti. Cerca e seleziona Attestato di Rischio RC Auto.',
-        shortcut: 'Alt+R',
-        shortcutLabel: 'Selezionare l\'Attestato di Rischio'
-      },
-      stuck1: {
-        text: 'L\'Attestato di Rischio è il primo documento della lista. Clicca su di esso o premi Tab per raggiungerlo.',
-        shortcut: 'Alt+R',
-        shortcutLabel: 'Selezionare l\'Attestato di Rischio'
-      },
-      stuck2: {
-        text: 'Scorciatoia: premi Alt e la lettera R per selezionare automaticamente l\'Attestato di Rischio RC Auto.',
-        shortcut: 'Alt+R',
-        shortcutLabel: 'Selezionare l\'Attestato di Rischio'
-      }
+
+    // ─ Flusso Attestato di Rischio
+    att_docs: {
+      normal: { text: 'Vedi la lista dei tuoi documenti. Cerca e seleziona Attestato di Rischio RC Auto.', shortcut: 'Alt+R', shortcutLabel: 'Selezionare l\'Attestato di Rischio' },
+      stuck1: { text: 'L\'Attestato di Rischio è il primo documento evidenziato in blu nella tabella. Clicca su "Apri".', shortcut: 'Alt+R', shortcutLabel: 'Selezionare l\'Attestato di Rischio' },
+      stuck2: { text: 'Scorciatoia: premi Alt+R per selezionare automaticamente l\'Attestato di Rischio RC Auto.', shortcut: 'Alt+R', shortcutLabel: 'Selezionare l\'Attestato di Rischio' }
     },
-    4: {
-      normal: {
-        text: 'Scegli la tua polizza RC Auto dall\'elenco. Poi premi il pulsante Continua.',
-        shortcut: 'Alt+C',
-        shortcutLabel: 'Continuare alla fase successiva'
-      },
-      stuck1: {
-        text: 'Clicca su una polizza per selezionarla. Poi cerca il pulsante Continua in fondo alla pagina.',
-        shortcut: 'Alt+C',
-        shortcutLabel: 'Continuare alla fase successiva'
-      },
-      stuck2: {
-        text: 'Scorciatoia: premi Alt e la lettera C per procedere direttamente con la polizza selezionata.',
-        shortcut: 'Alt+C',
-        shortcutLabel: 'Continuare alla fase successiva'
-      }
+    att_polizza: {
+      normal: { text: 'Scegli il veicolo per cui vuoi l\'attestato, poi premi Genera attestato.', shortcut: 'Alt+C', shortcutLabel: 'Confermare la selezione' },
+      stuck1: { text: 'Clicca su una polizza per selezionarla (si evidenzia in blu). Poi premi Genera attestato.', shortcut: 'Alt+C', shortcutLabel: 'Confermare la selezione' },
+      stuck2: { text: 'Scorciatoia: premi Alt+C per procedere con la polizza EF 482 GH già selezionata.', shortcut: 'Alt+C', shortcutLabel: 'Confermare la selezione' }
     },
-    5: {
-      normal: {
-        text: 'Il tuo attestato è pronto. Premi il pulsante Scarica PDF per salvarlo sul tuo computer.',
-        shortcut: 'Alt+S',
-        shortcutLabel: 'Scaricare il PDF'
-      },
-      stuck1: {
-        text: 'Il pulsante Scarica PDF è ben visibile al centro della pagina. Puoi premere Tab per raggiungerlo.',
-        shortcut: 'Alt+S',
-        shortcutLabel: 'Scaricare il PDF'
-      },
-      stuck2: {
-        text: 'Scorciatoia: premi Alt e la lettera S per scaricare subito il PDF dell\'attestato di rischio.',
-        shortcut: 'Alt+S',
-        shortcutLabel: 'Scaricare il PDF'
-      }
-    }
+    att_download: {
+      normal: { text: 'Il tuo attestato è pronto. Premi Scarica PDF per salvarlo sul tuo computer.', shortcut: 'Alt+S', shortcutLabel: 'Scaricare il PDF' },
+      stuck1: { text: 'Il pulsante blu Scarica PDF è al centro della pagina. Premi Tab per raggiungerlo.', shortcut: 'Alt+S', shortcutLabel: 'Scaricare il PDF' },
+      stuck2: { text: 'Scorciatoia: premi Alt+S per scaricare immediatamente il PDF dell\'attestato.', shortcut: 'Alt+S', shortcutLabel: 'Scaricare il PDF' }
+    },
+
+    // ─ Flusso Sinistro
+    sin_tipo: {
+      normal: { text: 'Sei nell\'apertura sinistro. Seleziona il tipo di evento tra le quattro opzioni proposte.', shortcut: 'Alt+T', shortcutLabel: 'Confermare il tipo di sinistro' },
+      stuck1: { text: 'Clicca su uno dei riquadri per selezionare il tipo. Per un incidente auto scegli "Incidente stradale".', shortcut: 'Alt+T', shortcutLabel: 'Confermare il tipo di sinistro' },
+      stuck2: { text: 'Scorciatoia: premi Alt+T per confermare il tipo già selezionato e andare avanti.', shortcut: 'Alt+T', shortcutLabel: 'Confermare il tipo di sinistro' }
+    },
+    sin_dati: {
+      normal: { text: 'Inserisci la data, l\'ora e il luogo del sinistro. Poi descrivi brevemente cosa è successo.', shortcut: 'Alt+P', shortcutLabel: 'Proseguire con i dati inseriti' },
+      stuck1: { text: 'Compila i campi uno alla volta: data, ora, città, via. La descrizione può essere molto breve.', shortcut: 'Alt+P', shortcutLabel: 'Proseguire con i dati inseriti' },
+      stuck2: { text: 'Scorciatoia: premi Alt+P per salvare i dati e passare allo step successivo.', shortcut: 'Alt+P', shortcutLabel: 'Proseguire con i dati inseriti' }
+    },
+    sin_veicoli: {
+      normal: { text: 'Indica se c\'erano altri veicoli e descrivi i danni al tuo veicolo.', shortcut: 'Alt+P', shortcutLabel: 'Proseguire con i dati inseriti' },
+      stuck1: { text: 'Se eri solo, scegli "Nessun altro veicolo". Poi scrivi i danni al campo di testo.', shortcut: 'Alt+P', shortcutLabel: 'Proseguire con i dati inseriti' },
+      stuck2: { text: 'Scorciatoia: premi Alt+P per salvare le informazioni e andare avanti.', shortcut: 'Alt+P', shortcutLabel: 'Proseguire con i dati inseriti' }
+    },
+    sin_allegati: {
+      normal: { text: 'Puoi allegare le foto dei danni. Non è obbligatorio: puoi anche saltare questo passo.', shortcut: 'Alt+A', shortcutLabel: 'Procedere senza allegati' },
+      stuck1: { text: 'Premi "Seleziona file" accanto a Foto dei danni per caricare immagini. Oppure usa "Salta".', shortcut: 'Alt+A', shortcutLabel: 'Procedere senza allegati' },
+      stuck2: { text: 'Scorciatoia: premi Alt+A per proseguire senza allegati. Li puoi aggiungere in un secondo momento.', shortcut: 'Alt+A', shortcutLabel: 'Procedere senza allegati' }
+    },
+    sin_conferma: {
+      normal: { text: 'Controlla il riepilogo della tua segnalazione. Se è tutto corretto, premi Invia segnalazione.', shortcut: 'Alt+I', shortcutLabel: 'Inviare la segnalazione' },
+      stuck1: { text: 'Scorri verso il basso per vedere tutti i dati. Poi premi il pulsante rosso Invia segnalazione.', shortcut: 'Alt+I', shortcutLabel: 'Inviare la segnalazione' },
+      stuck2: { text: 'Scorciatoia: premi Alt+I per inviare la segnalazione e aprire ufficialmente la pratica sinistro.', shortcut: 'Alt+I', shortcutLabel: 'Inviare la segnalazione' }
+    },
   };
 
-  // ── System prompt per Claude ───────────────────────────────────────
-  const SYSTEM_PROMPT = `Sei VoceGuidata, un assistente vocale accessibile per portali assicurativi.
+  // ── System prompt per Claude ───────────────────────────────────────────
+  const SYSTEM_PROMPT = `Sei VoceGuidata, un assistente vocale accessibile per portali assicurativi italiani.
 Aiuti Mario, 68 anni, con difficoltà visive e tremore alle mani, a completare operazioni online.
 
 REGOLE FONDAMENTALI:
@@ -111,142 +81,126 @@ REGOLE FONDAMENTALI:
 - Rispondi SOLO in italiano
 - Output: JSON con i campi "text", "shortcut" (es. "Alt+A"), "shortcutLabel" (es. "Accedere")
 
-Step del portale:
-1 = Login (shortcut: Alt+A)
-2 = Dashboard/Documenti (shortcut: Alt+D)
-3 = Lista documenti - Attestato Rischio (shortcut: Alt+R)
-4 = Selezione polizza (shortcut: Alt+C)
-5 = Download PDF (shortcut: Alt+S)`;
+FLUSSO ATTESTATO DI RISCHIO:
+- login: accesso con e-mail e password (shortcut: Alt+A)
+- dashboard: scelta scenario (attestato o sinistro)
+- att_docs: lista documenti, seleziona Attestato di Rischio (shortcut: Alt+R)
+- att_polizza: selezione polizza RC Auto (shortcut: Alt+C)
+- att_download: scarica il PDF (shortcut: Alt+S)
 
-  // ── detectStuck(lastActionTime) ───────────────────────────────────
-  /**
-   * Rileva inattività prolungata dell'utente
-   * @param {number} lastActionTime  Timestamp (ms) dell'ultima azione
-   * @returns {boolean}  true se l'utente è inattivo da > STUCK_THRESHOLD_MS
-   */
+FLUSSO APERTURA SINISTRO:
+- sin_tipo: seleziona tipo di sinistro tra 4 opzioni (shortcut: Alt+T)
+- sin_dati: inserisci data, ora, luogo, dinamica (shortcut: Alt+P)
+- sin_veicoli: altri veicoli, descrizione danni, feriti (shortcut: Alt+P)
+- sin_allegati: allega foto/CID/verbale (facoltativi) (shortcut: Alt+A)
+- sin_conferma: riepilogo e invio segnalazione (shortcut: Alt+I)`;
+
+  // ── detectStuck(lastActionTime, thresholdMs) ──────────────────────────
   function detectStuck(lastActionTime, thresholdMs = DEFAULT_STUCK_THRESHOLD_MS) {
     return (Date.now() - lastActionTime) > thresholdMs;
   }
 
-  // ── getContextualHelp(currentStep, stuckCount, apiKey) ────────────
+  // ── getContextualHelp(stepId, stuckCount, apiKey) ─────────────────────
   /**
-   * Genera un'istruzione contestuale per il passo corrente.
-   * Se stuckCount >= 2: messaggio più dettagliato con alternativa tastiera.
-   * Se apiKey assente: usa istruzioni statiche predefinite.
-   *
-   * @param {number} currentStep  Step corrente (1-5)
-   * @param {number} stuckCount   Quante volte l'utente si è bloccato
-   * @param {string} apiKey       Claude API key (opzionale)
+   * Genera istruzione contestuale per lo step corrente.
+   * @param {string} stepId    ID dello step (es. 'att_docs', 'sin_tipo')
+   * @param {number} stuckCount  Quante volte l'utente si è bloccato (0-2)
+   * @param {string} apiKey    Claude API key (opzionale)
    * @returns {Promise<{text: string, shortcut: string, shortcutLabel: string}>}
    */
-  async function getContextualHelp(currentStep, stuckCount, apiKey) {
-    const step = Math.max(1, Math.min(5, currentStep));
-
-    // ── Fallback statico (no API key) ──────────────────────────────
+  async function getContextualHelp(stepId, stuckCount, apiKey) {
     if (!apiKey || apiKey.trim() === '') {
-      return _staticInstruction(step, stuckCount);
+      return _staticInstruction(stepId, stuckCount);
     }
-
-    // ── Chiamata Claude API ────────────────────────────────────────
     try {
-      const userMessage = _buildUserMessage(step, stuckCount);
-      const result = await _callClaude(userMessage, apiKey.trim());
-      return _parseClaudeResponse(result, step);
+      const msg    = _buildUserMessage(stepId, stuckCount);
+      const result = await _callClaude(msg, apiKey.trim());
+      return _parseClaudeResponse(result, stepId);
     } catch (err) {
       console.warn('[AgentHelper] Fallback statico (errore API):', err.message);
-      return _staticInstruction(step, stuckCount);
+      return _staticInstruction(stepId, stuckCount);
     }
   }
 
-  // ── Privati ────────────────────────────────────────────────────────
+  // ── Privati ────────────────────────────────────────────────────────────
 
-  function _staticInstruction(step, stuckCount) {
-    const stepData = STATIC_INSTRUCTIONS[step];
-    if (!stepData) return { text: 'Segui le istruzioni sullo schermo.', shortcut: '', shortcutLabel: '' };
-
-    if (stuckCount === 0) return stepData.normal;
-    if (stuckCount === 1) return stepData.stuck1;
-    return stepData.stuck2;
+  function _staticInstruction(stepId, stuckCount) {
+    const data = STATIC_INSTRUCTIONS[stepId];
+    if (!data) return { text: 'Segui le istruzioni sullo schermo.', shortcut: '', shortcutLabel: '' };
+    if (stuckCount === 0) return data.normal;
+    if (stuckCount === 1) return data.stuck1;
+    return data.stuck2;
   }
 
-  function _buildUserMessage(step, stuckCount) {
+  function _buildUserMessage(stepId, stuckCount) {
     const stepNames = {
-      1: 'Login / accesso al portale',
-      2: 'Dashboard — navigazione ai documenti',
-      3: 'Lista documenti — selezione Attestato di Rischio RC Auto',
-      4: 'Selezione polizza RC Auto e conferma',
-      5: 'Download PDF dell\'attestato di rischio'
+      login:        'Accesso al portale (e-mail + password)',
+      dashboard:    'Dashboard — scelta dello scenario',
+      att_docs:     'Lista documenti — seleziona Attestato di Rischio RC Auto',
+      att_polizza:  'Selezione polizza RC Auto',
+      att_download: 'Download PDF attestato',
+      sin_tipo:     'Selezione tipo sinistro (incidente, furto, evento atmosferico, danni a terzi)',
+      sin_dati:     'Inserimento dati evento (data, ora, luogo, dinamica)',
+      sin_veicoli:  'Veicoli coinvolti e descrizione danni',
+      sin_allegati: 'Allegati facoltativi (foto, CID, verbale)',
+      sin_conferma: 'Riepilogo e invio segnalazione sinistro',
     };
 
-    const context = `L'utente si trova allo step ${step}: "${stepNames[step]}".`;
-    let difficulty = '';
+    const nome = stepNames[stepId] || stepId;
+    const ctx  = `L'utente si trova allo step "${stepId}": "${nome}".`;
+    let diff = '';
+    if (stuckCount === 0) diff = 'È appena arrivato. Fornisci un\'istruzione di orientamento iniziale.';
+    else if (stuckCount === 1) diff = 'Ha chiesto aiuto una volta. Sii più dettagliato.';
+    else diff = `È bloccato (${stuckCount} richieste). Dai prima la scorciatoia da tastiera, poi spiega cosa fare.`;
 
-    if (stuckCount === 0) {
-      difficulty = 'È appena arrivato su questa schermata. Fornisci un\'istruzione di orientamento iniziale.';
-    } else if (stuckCount === 1) {
-      difficulty = 'L\'utente ha chiesto aiuto una volta. Fornisci un\'istruzione più dettagliata.';
-    } else {
-      difficulty = `L'utente è bloccato (${stuckCount} richieste). Fornisci l'alternativa da tastiera come prima cosa. Sii molto specifico.`;
-    }
-
-    return `${context} ${difficulty} Rispondi con JSON: {"text":"...","shortcut":"Alt+X","shortcutLabel":"..."}`;
+    return `${ctx} ${diff} Rispondi con JSON: {"text":"...","shortcut":"Alt+X","shortcutLabel":"..."}`;
   }
 
   async function _callClaude(userMessage, apiKey) {
-    const response = await fetch(ANTHROPIC_API_URL, {
+    const res = await fetch(ANTHROPIC_API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
         'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-calls': 'true'
+        'anthropic-dangerous-direct-browser-calls': 'true',
       },
       body: JSON.stringify({
         model: MODEL,
         max_tokens: 200,
         system: SYSTEM_PROMPT,
-        messages: [
-          { role: 'user', content: userMessage }
-        ]
-      })
+        messages: [{ role: 'user', content: userMessage }],
+      }),
     });
-
-    if (!response.ok) {
-      const err = await response.json().catch(() => ({ error: { message: response.statusText } }));
-      throw new Error(err?.error?.message || `HTTP ${response.status}`);
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({ error: { message: res.statusText } }));
+      throw new Error(err?.error?.message || `HTTP ${res.status}`);
     }
-
-    const data = await response.json();
-    const content = data?.content?.[0]?.text;
-    if (!content) throw new Error('Risposta Claude vuota');
-    return content;
+    const data = await res.json();
+    const text = data?.content?.[0]?.text;
+    if (!text) throw new Error('Risposta Claude vuota');
+    return text;
   }
 
-  function _parseClaudeResponse(raw, step) {
-    // Estrae JSON dalla risposta Claude (che potrebbe contenere testo extra)
+  function _parseClaudeResponse(raw, stepId) {
     try {
       const match = raw.match(/\{[\s\S]*?\}/);
       if (match) {
         const parsed = JSON.parse(match[0]);
         if (parsed.text) return {
           text: parsed.text,
-          shortcut: parsed.shortcut || STATIC_INSTRUCTIONS[step]?.normal?.shortcut || '',
-          shortcutLabel: parsed.shortcutLabel || STATIC_INSTRUCTIONS[step]?.normal?.shortcutLabel || ''
+          shortcut: parsed.shortcut || STATIC_INSTRUCTIONS[stepId]?.normal?.shortcut || '',
+          shortcutLabel: parsed.shortcutLabel || STATIC_INSTRUCTIONS[stepId]?.normal?.shortcutLabel || '',
         };
       }
-    } catch (e) {
-      // JSON non valido: usa il testo grezzo come istruzione
-    }
-
-    // Fallback: usa il testo grezzo se non è JSON
+    } catch (_) { /* usa testo grezzo */ }
     return {
       text: raw.substring(0, 200),
-      shortcut: STATIC_INSTRUCTIONS[step]?.normal?.shortcut || '',
-      shortcutLabel: STATIC_INSTRUCTIONS[step]?.normal?.shortcutLabel || ''
+      shortcut: STATIC_INSTRUCTIONS[stepId]?.normal?.shortcut || '',
+      shortcutLabel: STATIC_INSTRUCTIONS[stepId]?.normal?.shortcutLabel || '',
     };
   }
 
-  // ── API pubblica ──────────────────────────────────────────────────
   return { getContextualHelp, detectStuck };
 
 })();

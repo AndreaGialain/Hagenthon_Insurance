@@ -78,7 +78,7 @@
       <!-- Indicatore step corrente -->
       <div class="guide-step-indicator" aria-label="Step corrente" aria-live="polite">
         <span class="step-number" id="current-step-num" aria-label="Step numero">1</span>
-        <span class="step-of" aria-hidden="true">di 5</span>
+        <span class="step-of" aria-hidden="true">di <span id="total-steps-num">5</span></span>
         <span class="step-name" id="current-step-name">Login</span>
       </div>
 
@@ -165,10 +165,10 @@
        role="status" aria-live="assertive" aria-label="Scorciatoia attivata"></div>
 
   <!-- ═══════════════════════════════ SCRIPTS ══════════════════════════════ -->
-  <script src="voice-guide.js"></script>
-  <script src="agent.js"></script>
-  <script src="keyboard-nav.js"></script>
-  <script src="portal.js"></script>
+  <script src="voice-guide.js?v=2"></script>
+  <script src="agent.js?v=2"></script>
+  <script src="keyboard-nav.js?v=2"></script>
+  <script src="portal.js?v=2"></script>
 
   <script>
     /**
@@ -230,34 +230,31 @@
                   + 'Iniziamo dal primo passo: accedere al portale con le tue credenziali.';
         this.showInstruction(msg);
         VoiceGuide.speak(msg);
-        // Istruzione step 1 dopo la intro
-        setTimeout(() => this.loadStepInstruction(1), 4500);
+        setTimeout(() => this.loadStepInstruction('login'), 4500);
       },
 
       // ── Cambio step (chiamato da portal.js) ───────────────────────
-      onStepChange(step, stepName) {
+      onStepChange(stepId, stepName, num, total) {
         this.stuckCount     = 0;
         this.lastActionTime = Date.now();
 
-        document.getElementById('current-step-num').textContent  = step;
+        document.getElementById('current-step-num').textContent  = num;
         document.getElementById('current-step-name').textContent = stepName;
+        const totalEl = document.getElementById('total-steps-num');
+        if (totalEl) totalEl.textContent = total;
 
-        this._updateProgressBar(step);
-
-        // Piccolo ritardo per lasciar finire l'animazione del portale
-        setTimeout(() => this.loadStepInstruction(step), 400);
+        setTimeout(() => this.loadStepInstruction(stepId), 400);
       },
 
       // ── Carica istruzione per il passo corrente ───────────────────
-      async loadStepInstruction(step) {
+      async loadStepInstruction(stepId) {
         try {
-          const instr = await AgentHelper.getContextualHelp(step, 0, this.apiKey);
+          const instr = await AgentHelper.getContextualHelp(stepId, 0, this.apiKey);
           this.showInstruction(instr.text);
           VoiceGuide.speak(instr.text);
 
           if (instr.shortcut) {
             this.showShortcutHint(instr.shortcutLabel, instr.shortcut);
-            // Annuncia shortcut dopo l'istruzione principale
             setTimeout(() => {
               VoiceGuide.speakKeyboardShortcut(instr.shortcutLabel, instr.shortcut);
             }, Math.max(2000, instr.text.length * 55));
@@ -280,7 +277,7 @@
 
         try {
           const instr = await AgentHelper.getContextualHelp(
-            Portal.currentStep,
+            Portal.currentStepId,
             this.stuckCount,
             this.apiKey
           );
@@ -356,15 +353,6 @@
         if (dot) dot.className = 'status-dot ' + (ok ? 'ok' : 'warn');
       },
 
-      _updateProgressBar(step) {
-        const bar = document.getElementById('progress-bar');
-        if (bar) {
-          const pct = ((step - 1) / 4) * 100;
-          bar.style.width = pct + '%';
-          bar.setAttribute('aria-valuenow', pct);
-        }
-      },
-
       _addToLog(text) {
         const list = document.getElementById('log-list');
         if (!list) return;
@@ -393,16 +381,19 @@
 
       // ── Rilevamento inattività ────────────────────────────────────
       _checkStuck() {
-        if (!this.started || Portal.currentStep >= 5) return;
+        const sid = Portal.currentStepId;
+        if (!this.started || sid === 'att_download' || sid === 'sin_conferma') return;
         if (AgentHelper.detectStuck(this.lastActionTime, this.stuckThresholdMs) && this.stuckCount === 0) {
-          // Prima segnalazione passiva (non incrementa stuckCount — solo suggerimento)
-          const step    = Portal.currentStep;
-          const stepDef = { 1:'Alt+A', 2:'Alt+D', 3:'Alt+R', 4:'Alt+C', 5:'Alt+S' };
-          const shortcut = stepDef[step] || '';
-          const msg = `Hai bisogno di aiuto? Premi il pulsante Aiuto, oppure usa ${shortcut} sulla tastiera.`;
+          const shortcutMap = {
+            login:'Alt+A', dashboard:'', att_docs:'Alt+R', att_polizza:'Alt+C', att_download:'Alt+S',
+            sin_tipo:'Alt+T', sin_dati:'Alt+P', sin_veicoli:'Alt+P', sin_allegati:'Alt+A', sin_conferma:'Alt+I',
+          };
+          const sc  = shortcutMap[sid] || '';
+          const msg = sc
+            ? `Hai bisogno di aiuto? Premi il pulsante Aiuto, oppure usa ${sc} sulla tastiera.`
+            : 'Hai bisogno di aiuto? Premi il pulsante Aiuto per un suggerimento.';
           this.showInstruction(msg);
           VoiceGuide.speak(msg);
-          // Impedisce spam: considera come stuck count 1 per questo ciclo
           this.lastActionTime = Date.now();
         }
       }
